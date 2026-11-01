@@ -1,0 +1,21 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  host: db
+  username: postgres
+  password: password
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: sw_verification_development
+
+test:
+  <<: *default
+  database: sw_verification_test
+
+production:
+  <<: *default
+  database: sw_verification_production
+  username: sw_verification
+  password: <%= ENV["SW_VERIFICATION_DATABASE_PASSWORD"] %>
