@@ -1,0 +1,11 @@
+.git
+.gitignore
+.kilo
+.env
+log/*
+tmp/*
+storage/*
+public/assets
+node_modules
+coverage
+README.md

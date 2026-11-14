@@ -1,0 +1,9 @@
+keysight:
+  name: Keysight Technologies
+  country: США
+  website: https://www.keysight.com
+
+rohde:
+  name: Rohde & Schwarz
+  country: Германия
+  website: https://www.rohde-schwarz.com

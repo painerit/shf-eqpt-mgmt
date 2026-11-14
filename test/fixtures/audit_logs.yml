@@ -1,0 +1,6 @@
+created:
+  user: admin
+  auditable_type: Equipment
+  auditable_id: <%= ActiveRecord::FixtureSet.identify(:generator) %>
+  action: create
+  audited_changes: {}

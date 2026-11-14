@@ -1,0 +1,19 @@
+admin:
+  code: admin
+  name: Администратор
+  description: Полный доступ
+
+metrologist:
+  code: metrologist
+  name: Метролог
+  description: Ведение поверок
+
+engineer:
+  code: engineer
+  name: Инженер
+  description: Выполнение поверок
+
+customer:
+  code: customer
+  name: Заказчик
+  description: Просмотр оборудования

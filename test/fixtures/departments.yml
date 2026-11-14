@@ -1,0 +1,11 @@
+metrology:
+  code: MS
+  name: Метрологическая служба
+  description: Организация поверок
+  active: true
+
+svc:
+  code: SVC
+  name: Отдел СВЧ-измерений
+  description: Эксплуатация оборудования
+  active: true

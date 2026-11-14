@@ -1,0 +1,29 @@
+generator:
+  inventory_number: INV-TEST-001
+  serial_number: SN-TEST-001
+  model: N5183B
+  equipment_type: generator
+  manufacturer: keysight
+  department: svc
+  responsible_user: engineer
+  status: in_service
+  commissioned_on: 2024-01-15
+  verification_interval_months: 12
+  last_verified_on: 2026-01-15
+  next_verification_on: 2027-01-15
+  location: Лаборатория 1
+
+overdue_generator:
+  inventory_number: INV-TEST-002
+  serial_number: SN-TEST-002
+  model: SMB100B
+  equipment_type: generator
+  manufacturer: rohde
+  department: svc
+  responsible_user: engineer
+  status: in_service
+  commissioned_on: 2023-01-15
+  verification_interval_months: 12
+  last_verified_on: 2025-01-15
+  next_verification_on: 2026-01-15
+  location: Лаборатория 2

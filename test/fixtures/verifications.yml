@@ -1,0 +1,20 @@
+passed:
+  equipment: generator
+  verification_schedule: planned
+  performed_by: engineer
+  status: passed
+  performed_on: 2026-01-15
+  completed_at: 2026-01-15 10:00:00
+  protocol_number: PR-TEST-000001
+  certificate_number: SV-TEST-000001
+  conclusion: Оборудование пригодно к эксплуатации
+
+failed:
+  equipment: overdue_generator
+  verification_schedule: overdue
+  performed_by: engineer
+  status: failed
+  performed_on: 2026-01-15
+  completed_at: 2026-01-15 11:00:00
+  protocol_number: PR-TEST-000002
+  conclusion: Оборудование не соответствует требованиям

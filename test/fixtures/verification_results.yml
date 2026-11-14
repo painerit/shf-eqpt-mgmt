@@ -1,0 +1,19 @@
+power:
+  verification: passed
+  parameter_name: Выходная мощность
+  unit: Вт
+  measured_value: 10.0
+  reference_value: 10.0
+  tolerance: 0.5
+  passed: true
+  raw_payload: {}
+
+frequency:
+  verification: failed
+  parameter_name: Частота
+  unit: ГГц
+  measured_value: 10.5
+  reference_value: 10.0
+  tolerance: 0.01
+  passed: false
+  raw_payload: {}

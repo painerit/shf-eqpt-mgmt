@@ -1,0 +1,9 @@
+generator:
+  code: GENERATOR
+  name: Генератор СВЧ
+  active: true
+
+spectrum:
+  code: SPECTRUM
+  name: Анализатор спектра
+  active: true

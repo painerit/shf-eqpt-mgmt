@@ -1,0 +1,8 @@
+overdue:
+  user: engineer
+  notifiable_type: Equipment
+  notifiable_id: <%= ActiveRecord::FixtureSet.identify(:overdue_generator) %>
+  kind: overdue
+  message: Просрочена поверка оборудования INV-TEST-002
+  due_on: 2026-01-15
+  read_at:

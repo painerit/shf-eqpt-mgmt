@@ -1,0 +1,23 @@
+admin:
+  email: admin@example.com
+  password_digest: <%= BCrypt::Password.create("password123") %>
+  full_name: Администратор Системы
+  role: admin
+  department: metrology
+  active: true
+
+engineer:
+  email: engineer@example.com
+  password_digest: <%= BCrypt::Password.create("password123") %>
+  full_name: Петров Алексей Викторович
+  role: engineer
+  department: svc
+  active: true
+
+customer:
+  email: customer@example.com
+  password_digest: <%= BCrypt::Password.create("password123") %>
+  full_name: Сидоров Дмитрий Олегович
+  role: customer
+  department: svc
+  active: true
