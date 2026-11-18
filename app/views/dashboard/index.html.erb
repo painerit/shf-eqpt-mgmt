@@ -60,7 +60,7 @@
             <% @overdue_equipment.each do |equipment| %>
               <tr>
                 <td>
-                  <strong><%= equipment.inventory_number %></strong>
+                  <strong><%= link_to equipment.inventory_number, equipment_path(equipment) %></strong>
                   <span class="muted"><%= equipment.model %></span>
                 </td>
                 <td><%= equipment.department.name %></td>
@@ -92,7 +92,7 @@
         <% @due_soon_equipment.each do |equipment| %>
           <li class="list__item">
             <div>
-              <strong><%= equipment.inventory_number %></strong>
+              <strong><%= link_to equipment.inventory_number, equipment_path(equipment) %></strong>
               <span class="muted"><%= equipment.equipment_type.name %> · <%= equipment.model %></span>
             </div>
             <div class="list__meta">
@@ -135,10 +135,10 @@
             <% @upcoming_schedules.each do |schedule| %>
               <tr>
                 <td>
-                  <strong><%= schedule.equipment.inventory_number %></strong>
+                  <strong><%= link_to schedule.equipment.inventory_number, equipment_path(schedule.equipment) %></strong>
                   <span class="muted"><%= schedule.equipment.model %></span>
                 </td>
-                <td><%= human_date(schedule.planned_on) %></td>
+                <td><%= link_to human_date(schedule.planned_on), verification_schedule_path(schedule) %></td>
                 <td><%= schedule.responsible_user&.display_name || "—" %></td>
                 <td>
                   <span class="<%= status_badge_class(schedule.status) %>">
@@ -169,7 +169,7 @@
         <% @recent_verifications.each do |verification| %>
           <li class="list__item">
             <div>
-              <strong><%= verification.equipment.inventory_number %></strong>
+              <strong><%= link_to verification.equipment.inventory_number, equipment_path(verification.equipment) %></strong>
               <span class="muted">
                 <%= human_date(verification.performed_on) %> ·
                 <%= verification.performed_by&.display_name || "—" %>
@@ -182,6 +182,7 @@
               <span class="muted">
                 <%= verification.certificate_number.presence || "без свидетельства" %>
               </span>
+              <%= link_to "Открыть", verification_path(verification), class: "muted" %>
             </div>
           </li>
         <% end %>

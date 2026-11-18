@@ -42,3 +42,32 @@ admin_generator:
   last_verified_on: 2025-01-10
   next_verification_on: 2026-01-10
   location: Лаборатория 3
+
+decommissioned_generator:
+  inventory_number: INV-TEST-004
+  serial_number: SN-TEST-004
+  model: N9020B
+  equipment_type: spectrum
+  manufacturer: keysight
+  department: svc
+  responsible_user: engineer
+  status: decommissioned
+  commissioned_on: 2020-01-15
+  verification_interval_months: 12
+  last_verified_on: 2024-01-15
+  next_verification_on: 2025-01-15
+  location: Склад
+
+future_generator:
+  inventory_number: INV-TEST-005
+  serial_number: SN-TEST-005
+  model: SMB100B
+  equipment_type: generator
+  manufacturer: rohde
+  department: svc
+  responsible_user: engineer
+  status: in_service
+  commissioned_on: 2026-06-01
+  verification_interval_months: 24
+  next_verification_on: 2028-06-01
+  location: Лаборатория 5

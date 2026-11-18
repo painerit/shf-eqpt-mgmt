@@ -1,0 +1,18 @@
+<% page_title "Редактирование прибора" %>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__breadcrumb">
+      <%= link_to "Оборудование", equipment_index_path %> /
+      <%= link_to @equipment.inventory_number, equipment_path(@equipment) %> / Редактирование
+    </div>
+    <h1>Редактирование прибора</h1>
+    <p><%= @equipment.inventory_number %> · <%= @equipment.model %></p>
+  </div>
+</div>
+
+<section class="card">
+  <%= form_with model: @equipment, local: true, class: "form" do |form| %>
+    <%= render "form", form: form %>
+  <% end %>
+</section>

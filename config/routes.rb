@@ -10,6 +10,27 @@ Rails.application.routes.draw do
 
   get "up", to: "health#show", as: :health_check
 
+  resources :equipment, only: [:index, :show, :new, :create, :edit, :update]
+
+  resources :verification_schedules, only: [:index, :show, :new, :create, :edit, :update] do
+    collection do
+      post :generate
+    end
+
+    member do
+      patch :approve
+    end
+  end
+
+  resources :verifications, only: [:index, :show, :create, :edit, :update] do
+    member do
+      patch :start
+      patch :complete
+      patch :cancel
+      get :protocol
+    end
+  end
+
   namespace :admin do
     resources :users, only: [:index, :new, :create, :edit, :update]
   end

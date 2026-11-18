@@ -14,6 +14,14 @@ engineer:
   department: svc
   active: true
 
+metrologist:
+  email: metrologist@example.com
+  password_digest: <%= BCrypt::Password.create("password123") %>
+  full_name: Иванова Мария Сергеевна
+  role: metrologist
+  department: metrology
+  active: true
+
 customer:
   email: customer@example.com
   password_digest: <%= BCrypt::Password.create("password123") %>

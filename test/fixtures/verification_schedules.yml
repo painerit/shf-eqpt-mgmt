@@ -15,3 +15,12 @@ overdue:
   period_year: 2026
   status: planned
   notes: Просроченная поверка
+
+admin_planned:
+  equipment: admin_generator
+  normative_document: gost_power
+  responsible_user: metrologist
+  planned_on: 2027-02-01
+  period_year: 2027
+  status: planned
+  notes: Плановая поверка метрологической службы

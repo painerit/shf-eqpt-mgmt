@@ -4,6 +4,7 @@ class VerificationSchedule < ApplicationRecord
   belongs_to :responsible_user, class_name: "User", optional: true
 
   has_many :verifications, dependent: :restrict_with_error
+  has_many :audit_logs, as: :auditable, dependent: :destroy
 
   enum status: {
     planned: "planned",

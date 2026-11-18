@@ -65,4 +65,15 @@ module ApplicationHelper
       "verification_completed" => "Поверка завершена"
     }.fetch(kind.to_s, kind.to_s.humanize)
   end
+
+  def audit_action_label(action)
+    {
+      "create" => "Создание",
+      "update" => "Изменение",
+      "destroy" => "Удаление",
+      "complete" => "Завершение",
+      "publish" => "Публикация",
+      "approve" => "Согласование"
+    }.fetch(action.to_s, action.to_s.humanize)
+  end
 end

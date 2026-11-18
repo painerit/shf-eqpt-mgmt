@@ -7,6 +7,7 @@ class Verification < ApplicationRecord
            foreign_key: :verification_id,
            inverse_of: :verification,
            dependent: :destroy
+  has_many :audit_logs, as: :auditable, dependent: :destroy
 
   accepts_nested_attributes_for :verification_results,
                                 allow_destroy: true,
@@ -32,6 +33,10 @@ class Verification < ApplicationRecord
 
   def completed?
     passed? || failed?
+  end
+
+  def editable?
+    planned? || in_progress?
   end
 
   def publishable?

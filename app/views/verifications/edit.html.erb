@@ -1,0 +1,122 @@
+<% page_title "Оформление поверки" %>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__breadcrumb">
+      <%= link_to "Поверки", verifications_path %> /
+      <%= link_to @verification.equipment.inventory_number, equipment_path(@verification.equipment) %> /
+      Оформление
+    </div>
+    <h1>Оформление поверки</h1>
+    <p><%= @verification.equipment.inventory_number %> · <%= @verification.equipment.model %></p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to "К поверке", verification_path(@verification), class: "btn btn--ghost" %>
+  </div>
+</div>
+
+<section class="card">
+  <header class="card__header">
+    <h2>Данные поверки</h2>
+    <span class="<%= status_badge_class(@verification.status) %>">
+      <%= enum_label(Verification, :status, @verification.status) %>
+    </span>
+  </header>
+
+  <%= form_with model: @verification,
+                url: verification_path(@verification),
+                method: :patch,
+                local: true,
+                class: "form" do |form| %>
+    <%= render "shared/errors", object: @verification %>
+
+    <div class="detail-note detail-note--top">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-item__label">Прибор</span>
+          <span class="detail-item__value"><%= @verification.equipment.inventory_number %> · <%= @verification.equipment.model %></span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item__label">Подразделение</span>
+          <span class="detail-item__value"><%= @verification.equipment.department.name %></span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item__label">Плановая дата</span>
+          <span class="detail-item__value"><%= human_date(@verification.verification_schedule&.planned_on) %></span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item__label">Поверитель</span>
+          <span class="detail-item__value"><%= @verification.performed_by&.display_name || current_user.display_name %></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <%= form.label :performed_on, "Дата поверки" %>
+        <%= form.date_field :performed_on, required: true %>
+      </div>
+    </div>
+
+    <div class="field">
+      <%= form.label :conclusion, "Заключение" %>
+      <%= form.text_area :conclusion, rows: 3, placeholder: "Например: оборудование пригодно к эксплуатации" %>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section__header">
+        <h2>Результаты измерений</h2>
+        <span class="muted">Заполните хотя бы одну строку. Итоговый статус определяется по результатам.</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table table--form">
+          <thead>
+            <tr>
+              <th>Параметр</th>
+              <th>Ед.</th>
+              <th>Измерено</th>
+              <th>Опорное</th>
+              <th>Допуск</th>
+              <th>Результат</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <%= form.fields_for :verification_results do |result_form| %>
+              <tr>
+                <td><%= result_form.text_field :parameter_name, placeholder: "Выходная мощность" %></td>
+                <td><%= result_form.text_field :unit, placeholder: "Вт" %></td>
+                <td><%= result_form.number_field :measured_value, step: "any", placeholder: "10.0" %></td>
+                <td><%= result_form.number_field :reference_value, step: "any", placeholder: "10.0" %></td>
+                <td><%= result_form.number_field :tolerance, step: "any", placeholder: "0.5" %></td>
+                <td>
+                  <%= result_form.select :passed,
+                                         [["Пригодно", true], ["Непригодно", false]],
+                                         { include_blank: "—" } %>
+                </td>
+                <td>
+                  <% if result_form.object.persisted? %>
+                    <label class="checkbox checkbox--compact">
+                      <%= result_form.check_box :_destroy %>
+                      <span>Удалить</span>
+                    </label>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <%= form.submit "Сохранить черновик", class: "btn" %>
+      <%= form.submit "Завершить поверку",
+                      class: "btn btn--primary",
+                      formaction: complete_verification_path(@verification),
+                      formmethod: :post %>
+      <%= link_to "Отмена", verification_path(@verification), class: "btn btn--ghost" %>
+    </div>
+  <% end %>
+</section>

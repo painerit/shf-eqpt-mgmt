@@ -1,0 +1,82 @@
+<%= render "shared/errors", object: @equipment %>
+
+<div class="form-grid">
+  <div class="field">
+    <%= form.label :inventory_number, "Инвентарный номер" %>
+    <%= form.text_field :inventory_number, required: true, autocomplete: "off" %>
+  </div>
+
+  <div class="field">
+    <%= form.label :serial_number, "Заводской номер" %>
+    <%= form.text_field :serial_number, required: true, autocomplete: "off" %>
+  </div>
+
+  <div class="field">
+    <%= form.label :model, "Модель" %>
+    <%= form.text_field :model, required: true, autocomplete: "off" %>
+  </div>
+
+  <div class="field">
+    <%= form.label :equipment_type_id, "Тип оборудования" %>
+    <%= form.collection_select :equipment_type_id, @equipment_types, :id, :name, { include_blank: "Выберите тип" }, required: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :manufacturer_id, "Производитель" %>
+    <%= form.collection_select :manufacturer_id, @manufacturers, :id, :name, { include_blank: "Выберите производителя" }, required: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :department_id, "Подразделение" %>
+    <%= form.collection_select :department_id, @departments, :id, :name, { include_blank: "Выберите подразделение" }, required: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :responsible_user_id, "Ответственный" %>
+    <%= form.collection_select :responsible_user_id, @responsible_users, :id, :display_name, { include_blank: "Не назначен" } %>
+  </div>
+
+  <div class="field">
+    <%= form.label :status, "Статус" %>
+    <%= form.select :status,
+                    Equipment.statuses.keys.map { |status| [enum_label(Equipment, :status, status), status] },
+                    {},
+                    required: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :commissioned_on, "Дата ввода в эксплуатацию" %>
+    <%= form.date_field :commissioned_on %>
+  </div>
+
+  <div class="field">
+    <%= form.label :verification_interval_months, "Межповерочный интервал, мес." %>
+    <%= form.number_field :verification_interval_months, min: 1, required: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :last_verified_on, "Дата последней поверки" %>
+    <%= form.date_field :last_verified_on %>
+  </div>
+
+  <div class="field">
+    <%= form.label :next_verification_on, "Дата следующей поверки" %>
+    <%= form.date_field :next_verification_on %>
+    <span class="field__hint">Если оставить пустым, дата рассчитается автоматически.</span>
+  </div>
+
+  <div class="field">
+    <%= form.label :location, "Местоположение" %>
+    <%= form.text_field :location, autocomplete: "off" %>
+  </div>
+</div>
+
+<div class="field">
+  <%= form.label :notes, "Примечания" %>
+  <%= form.text_area :notes, rows: 4 %>
+</div>
+
+<div class="form-actions">
+  <%= form.submit form.object.new_record? ? "Добавить прибор" : "Сохранить изменения", class: "btn btn--primary" %>
+  <%= link_to "Отмена", form.object.new_record? ? equipment_index_path : equipment_path(form.object), class: "btn btn--ghost" %>
+</div>

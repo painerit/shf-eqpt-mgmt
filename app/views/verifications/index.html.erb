@@ -1,0 +1,113 @@
+<% page_title "Поверки" %>
+
+<div class="page-header">
+  <div>
+    <h1>Поверки</h1>
+    <p>Оперативный список поверок, результаты измерений и выданные документы</p>
+  </div>
+</div>
+
+<section class="card">
+  <%= form_with url: verifications_path, method: :get, local: true, class: "filters" do |form| %>
+    <div class="filters__grid">
+      <div class="field">
+        <%= form.label :q, "Поиск" %>
+        <%= form.search_field :q,
+                              value: params[:q],
+                              placeholder: "Инвентарный или заводской номер, модель" %>
+      </div>
+
+      <div class="field">
+        <%= form.label :department_id, "Подразделение" %>
+        <%= form.select :department_id,
+                        options_from_collection_for_select(@departments, :id, :name, params[:department_id]),
+                        { include_blank: "Все подразделения" } %>
+      </div>
+
+      <div class="field">
+        <%= form.label :status, "Статус" %>
+        <%= form.select :status,
+                        options_for_select(
+                          @verification_statuses.map { |status| [enum_label(Verification, :status, status), status] },
+                          params[:status]
+                        ),
+                        { include_blank: "Все статусы" } %>
+      </div>
+
+      <div class="field">
+        <%= form.label :date_from, "Дата с" %>
+        <%= form.date_field :date_from, value: params[:date_from] %>
+      </div>
+
+      <div class="field">
+        <%= form.label :date_to, "Дата по" %>
+        <%= form.date_field :date_to, value: params[:date_to] %>
+      </div>
+    </div>
+
+    <div class="filters__actions">
+      <%= form.submit "Применить", class: "btn btn--primary" %>
+      <%= link_to "Сбросить", verifications_path, class: "btn btn--ghost" %>
+    </div>
+  <% end %>
+</section>
+
+<section class="card">
+  <header class="card__header">
+    <h2>Найдено поверок: <%= @verifications.total_count %></h2>
+  </header>
+
+  <% if @verifications.any? %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Прибор</th>
+            <th>Дата поверки</th>
+            <th>Статус</th>
+            <th>Поверитель</th>
+            <th>Протокол</th>
+            <th>Свидетельство</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @verifications.each do |verification| %>
+            <tr>
+              <td>
+                <%= link_to verification.equipment.inventory_number,
+                            equipment_path(verification.equipment),
+                            class: "table__title" %>
+                <span class="muted"><%= verification.equipment.model %></span>
+              </td>
+              <td><%= human_date(verification.performed_on) %></td>
+              <td>
+                <span class="<%= status_badge_class(verification.status) %>">
+                  <%= enum_label(Verification, :status, verification.status) %>
+                </span>
+              </td>
+              <td><%= verification.performed_by&.display_name || "—" %></td>
+              <td><%= verification.protocol_number.presence || "—" %></td>
+              <td><%= verification.certificate_number.presence || "—" %></td>
+              <td class="table__actions">
+                <%= link_to "Открыть", verification_path(verification), class: "btn btn--small" %>
+                <% if policy(verification).edit? %>
+                  <%= link_to "Продолжить", edit_verification_path(verification), class: "btn btn--small" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-wrap">
+      <%= paginate @verifications %>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <strong>Поверки не найдены</strong>
+      <span>Измените фильтры или начните поверку из графика.</span>
+    </div>
+  <% end %>
+</section>

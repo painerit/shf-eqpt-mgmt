@@ -1,0 +1,51 @@
+<%= render "shared/errors", object: @schedule %>
+
+<div class="form-grid">
+  <div class="field">
+    <%= form.label :equipment_id, "Оборудование" %>
+    <%= form.collection_select :equipment_id, @equipment, :id, :display_name, { include_blank: "Выберите прибор" }, required: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :planned_on, "Плановая дата" %>
+    <%= form.date_field :planned_on, required: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :normative_document_id, "Нормативный документ" %>
+    <%= form.collection_select :normative_document_id,
+                               @normative_documents,
+                               :id,
+                               :doc_number,
+                               { include_blank: "Не выбран" } %>
+  </div>
+
+  <div class="field">
+    <%= form.label :responsible_user_id, "Ответственный" %>
+    <%= form.collection_select :responsible_user_id,
+                               @responsible_users,
+                               :id,
+                               :display_name,
+                               { include_blank: "Не назначен" } %>
+  </div>
+
+  <div class="field">
+    <%= form.label :status, "Статус" %>
+    <%= form.select :status,
+                    VerificationSchedule.statuses.keys.map { |status| [enum_label(VerificationSchedule, :status, status), status] },
+                    {},
+                    required: true %>
+  </div>
+</div>
+
+<div class="field">
+  <%= form.label :notes, "Примечания" %>
+  <%= form.text_area :notes, rows: 3 %>
+</div>
+
+<div class="form-actions">
+  <%= form.submit form.object.new_record? ? "Создать пункт графика" : "Сохранить изменения", class: "btn btn--primary" %>
+  <%= link_to "Отмена",
+              form.object.new_record? ? verification_schedules_path : verification_schedule_path(form.object),
+              class: "btn btn--ghost" %>
+</div>

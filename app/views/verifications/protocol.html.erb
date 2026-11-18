@@ -1,0 +1,84 @@
+<% page_title "Протокол поверки" %>
+
+<div class="page-header print-hidden">
+  <div>
+    <div class="page-header__breadcrumb">
+      <%= link_to "Поверки", verifications_path %> /
+      <%= link_to "Поверка ##{@verification.id}", verification_path(@verification) %> / Протокол
+    </div>
+    <h1>Протокол поверки</h1>
+    <p><%= @verification.protocol_number.presence || "номер будет присвоен при завершении" %></p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to "К поверке", verification_path(@verification), class: "btn btn--ghost" %>
+    <button type="button" class="btn btn--primary" onclick="window.print()">Печать</button>
+  </div>
+</div>
+
+<section class="card protocol">
+  <div class="protocol__header">
+    <div class="protocol__org">Метрологическая служба</div>
+    <h2>ПРОТОКОЛ ПОВЕРКИ</h2>
+    <div>№ <%= @verification.protocol_number.presence || "—" %></div>
+    <div>от <%= human_date(@verification.performed_on) %></div>
+  </div>
+
+  <div class="protocol__section">
+    <h3>Сведения о средстве измерений</h3>
+    <table class="table">
+      <tbody>
+        <tr><th>Инвентарный номер</th><td><%= @verification.equipment.inventory_number %></td></tr>
+        <tr><th>Заводской номер</th><td><%= @verification.equipment.serial_number %></td></tr>
+        <tr><th>Модель</th><td><%= @verification.equipment.model %></td></tr>
+        <tr><th>Тип оборудования</th><td><%= @verification.equipment.equipment_type.name %></td></tr>
+        <tr><th>Производитель</th><td><%= @verification.equipment.manufacturer.name %></td></tr>
+        <tr><th>Подразделение</th><td><%= @verification.equipment.department.name %></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="protocol__section">
+    <h3>Результаты измерений</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Параметр</th>
+          <th>Ед.</th>
+          <th>Измерено</th>
+          <th>Опорное</th>
+          <th>Допуск</th>
+          <th>Результат</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @verification.verification_results.each do |result| %>
+          <tr>
+            <td><%= result.parameter_name %></td>
+            <td><%= result.unit.presence || "—" %></td>
+            <td><%= result.measured_value.presence || "—" %></td>
+            <td><%= result.reference_value.presence || "—" %></td>
+            <td><%= result.tolerance.presence || "—" %></td>
+            <td><%= result.passed? ? "Пригодно" : "Непригодно" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="protocol__section">
+    <h3>Заключение</h3>
+    <p>
+      <%= @verification.conclusion.presence ||
+          (@verification.passed? ? "Оборудование пригодно к эксплуатации" : "Оборудование не соответствует требованиям") %>
+    </p>
+    <p>
+      <strong>Свидетельство о поверке:</strong>
+      <%= @verification.certificate_number.presence || "не выдавалось" %>
+    </p>
+  </div>
+
+  <div class="protocol__signatures">
+    <div>Поверитель: <%= @verification.performed_by&.display_name || "—" %></div>
+    <div>Подпись: ____________________</div>
+  </div>
+</section>

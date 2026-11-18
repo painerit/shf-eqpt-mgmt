@@ -1,0 +1,145 @@
+<% page_title "Графики поверок" %>
+
+<div class="page-header">
+  <div>
+    <h1>Графики поверок</h1>
+    <p>Планирование, согласование и запуск поверок оборудования</p>
+  </div>
+  <% if policy(VerificationSchedule).new? %>
+    <div class="page-header__actions">
+      <%= link_to "Новый пункт графика", new_verification_schedule_path, class: "btn btn--primary" %>
+    </div>
+  <% end %>
+</div>
+
+<section class="card">
+  <%= form_with url: verification_schedules_path, method: :get, local: true, class: "filters" do |form| %>
+    <div class="filters__grid">
+      <div class="field">
+        <%= form.label :q, "Поиск" %>
+        <%= form.search_field :q,
+                              value: params[:q],
+                              placeholder: "Инвентарный или заводской номер, модель" %>
+      </div>
+
+      <div class="field">
+        <%= form.label :department_id, "Подразделение" %>
+        <%= form.select :department_id,
+                        options_from_collection_for_select(@departments, :id, :name, params[:department_id]),
+                        { include_blank: "Все подразделения" } %>
+      </div>
+
+      <div class="field">
+        <%= form.label :period_year, "Год" %>
+        <%= form.select :period_year,
+                        options_for_select(@years.map { |year| [year, year] }, params[:period_year]),
+                        { include_blank: "Все годы" } %>
+      </div>
+
+      <div class="field">
+        <%= form.label :status, "Статус" %>
+        <%= form.select :status,
+                        options_for_select(
+                          @schedule_statuses.map { |status| [enum_label(VerificationSchedule, :status, status), status] },
+                          params[:status]
+                        ),
+                        { include_blank: "Все статусы" } %>
+      </div>
+    </div>
+
+    <div class="filters__actions">
+      <%= form.submit "Применить", class: "btn btn--primary" %>
+      <%= link_to "Сбросить", verification_schedules_path, class: "btn btn--ghost" %>
+    </div>
+  <% end %>
+</section>
+
+<% if policy(VerificationSchedule).generate? %>
+  <section class="card">
+    <header class="card__header">
+      <h2>Автоматическое формирование графика</h2>
+    </header>
+
+    <%= form_with url: generate_verification_schedules_path, method: :post, local: true, class: "filters" do |form| %>
+      <div class="filters__grid">
+        <div class="field">
+          <%= form.label :period_year, "Год" %>
+          <%= form.number_field :period_year, value: Date.current.year, min: 2001, required: true %>
+        </div>
+
+        <div class="field">
+          <%= form.label :department_id, "Подразделение" %>
+          <%= form.select :department_id,
+                          options_from_collection_for_select(@departments, :id, :name, nil),
+                          { include_blank: "Все подразделения" } %>
+        </div>
+      </div>
+
+      <div class="filters__actions">
+        <%= form.submit "Сформировать график", class: "btn btn--primary" %>
+      </div>
+    <% end %>
+  </section>
+<% end %>
+
+<section class="card">
+  <header class="card__header">
+    <h2>Найдено пунктов: <%= @schedules.total_count %></h2>
+  </header>
+
+  <% if @schedules.any? %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Прибор</th>
+            <th>Плановая дата</th>
+            <th>Год</th>
+            <th>Подразделение</th>
+            <th>Ответственный</th>
+            <th>Нормативный документ</th>
+            <th>Статус</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @schedules.each do |schedule| %>
+            <tr>
+              <td>
+                <%= link_to schedule.equipment.inventory_number,
+                            equipment_path(schedule.equipment),
+                            class: "table__title" %>
+                <span class="muted"><%= schedule.equipment.model %></span>
+              </td>
+              <td><%= human_date(schedule.planned_on) %></td>
+              <td><%= schedule.period_year %></td>
+              <td><%= schedule.equipment.department.name %></td>
+              <td><%= schedule.responsible_user&.display_name || "—" %></td>
+              <td><%= schedule.normative_document&.doc_number || "—" %></td>
+              <td>
+                <span class="<%= status_badge_class(schedule.status) %>">
+                  <%= enum_label(VerificationSchedule, :status, schedule.status) %>
+                </span>
+              </td>
+              <td class="table__actions">
+                <%= link_to "Открыть", verification_schedule_path(schedule), class: "btn btn--small" %>
+                <% if policy(schedule).edit? %>
+                  <%= link_to "Изменить", edit_verification_schedule_path(schedule), class: "btn btn--small" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-wrap">
+      <%= paginate @schedules %>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <strong>Пункты графика не найдены</strong>
+      <span>Измените фильтры или сформируйте график на год.</span>
+    </div>
+  <% end %>
+</section>

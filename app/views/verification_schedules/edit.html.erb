@@ -1,0 +1,18 @@
+<% page_title "Редактирование пункта графика" %>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__breadcrumb">
+      <%= link_to "Графики поверок", verification_schedules_path %> /
+      <%= link_to "Пункт ##{@schedule.id}", verification_schedule_path(@schedule) %> / Редактирование
+    </div>
+    <h1>Редактирование пункта графика</h1>
+    <p><%= @schedule.equipment.inventory_number %> · <%= human_date(@schedule.planned_on) %></p>
+  </div>
+</div>
+
+<section class="card">
+  <%= form_with model: @schedule, url: verification_schedule_path(@schedule), method: :patch, local: true, class: "form" do |form| %>
+    <%= render "form", form: form %>
+  <% end %>
+</section>

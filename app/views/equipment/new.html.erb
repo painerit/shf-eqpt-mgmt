@@ -1,0 +1,17 @@
+<% page_title "Новый прибор" %>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__breadcrumb">
+      <%= link_to "Оборудование", equipment_index_path %> / Новый прибор
+    </div>
+    <h1>Новый прибор</h1>
+    <p>Добавление СВЧ-оборудования в реестр</p>
+  </div>
+</div>
+
+<section class="card">
+  <%= form_with model: @equipment, local: true, class: "form" do |form| %>
+    <%= render "form", form: form %>
+  <% end %>
+</section>

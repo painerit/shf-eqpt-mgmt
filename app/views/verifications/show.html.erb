@@ -1,0 +1,168 @@
+<% page_title "Поверка ##{@verification.id}" %>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__breadcrumb">
+      <%= link_to "Поверки", verifications_path %> /
+      <%= link_to @verification.equipment.inventory_number, equipment_path(@verification.equipment) %> /
+      Поверка #<%= @verification.id %>
+    </div>
+    <h1>
+      <%= @verification.protocol_number.presence || "Поверка ##{@verification.id}" %>
+    </h1>
+    <p>
+      <%= @verification.equipment.inventory_number %> · <%= @verification.equipment.model %>
+    </p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to "К списку", verifications_path, class: "btn btn--ghost" %>
+    <% if policy(@verification).edit? %>
+      <%= link_to "Продолжить оформление", edit_verification_path(@verification), class: "btn btn--primary" %>
+    <% end %>
+    <% if @verification.completed? %>
+      <%= link_to "Протокол PDF", protocol_verification_path(@verification, format: :pdf), class: "btn" %>
+      <%= link_to "Печатная форма", protocol_verification_path(@verification), class: "btn btn--ghost", target: "_blank" %>
+    <% end %>
+    <% if policy(@verification).cancel? %>
+      <%= button_to "Отменить", cancel_verification_path(@verification), method: :patch, class: "btn btn--ghost" %>
+    <% end %>
+  </div>
+</div>
+
+<section class="card">
+  <header class="card__header">
+    <h2>Сведения о поверке</h2>
+    <span class="<%= status_badge_class(@verification.status) %>">
+      <%= enum_label(Verification, :status, @verification.status) %>
+    </span>
+  </header>
+
+  <div class="detail-grid">
+    <div class="detail-item">
+      <span class="detail-item__label">Прибор</span>
+      <span class="detail-item__value">
+        <%= link_to @verification.equipment.inventory_number, equipment_path(@verification.equipment) %>
+      </span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Дата поверки</span>
+      <span class="detail-item__value"><%= human_date(@verification.performed_on) %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Поверитель</span>
+      <span class="detail-item__value"><%= @verification.performed_by&.display_name || "—" %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Завершена</span>
+      <span class="detail-item__value"><%= human_datetime(@verification.completed_at) %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Плановая дата</span>
+      <span class="detail-item__value"><%= human_date(@verification.verification_schedule&.planned_on) %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Протокол</span>
+      <span class="detail-item__value"><%= @verification.protocol_number.presence || "—" %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Свидетельство</span>
+      <span class="detail-item__value"><%= @verification.certificate_number.presence || "—" %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Результатов измерений</span>
+      <span class="detail-item__value"><%= @verification.verification_results.size %></span>
+    </div>
+  </div>
+
+  <% if @verification.conclusion.present? %>
+    <div class="detail-note">
+      <span class="detail-item__label">Заключение</span>
+      <p><%= simple_format(@verification.conclusion) %></p>
+    </div>
+  <% end %>
+</section>
+
+<section class="card">
+  <header class="card__header">
+    <h2>Результаты измерений</h2>
+  </header>
+
+  <% if @verification.verification_results.any? %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Параметр</th>
+            <th>Ед.</th>
+            <th>Измерено</th>
+            <th>Опорное</th>
+            <th>Допуск</th>
+            <th>Результат</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @verification.verification_results.each do |result| %>
+            <tr>
+              <td><%= result.parameter_name %></td>
+              <td><%= result.unit.presence || "—" %></td>
+              <td><%= result.measured_value.presence || "—" %></td>
+              <td><%= result.reference_value.presence || "—" %></td>
+              <td><%= result.tolerance.presence || "—" %></td>
+              <td>
+                <span class="<%= result.passed? ? "badge badge--success" : "badge badge--danger" %>">
+                  <%= result.passed? ? "Пригодно" : "Непригодно" %>
+                </span>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <strong>Результаты пока не внесены</strong>
+      <span>Откройте оформление поверки и добавьте измерения.</span>
+    </div>
+  <% end %>
+</section>
+
+<% unless current_user.customer? %>
+  <section class="card">
+    <header class="card__header">
+      <h2>История изменений</h2>
+      <span class="muted">последние 10 записей</span>
+    </header>
+
+    <% if @audit_logs.any? %>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Пользователь</th>
+              <th>Действие</th>
+              <th>Изменённые поля</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @audit_logs.each do |log| %>
+              <tr>
+                <td><%= human_datetime(log.created_at) %></td>
+                <td><%= log.user&.display_name || "Система" %></td>
+                <td><%= audit_action_label(log.action) %></td>
+                <td>
+                  <%= log.changed_fields.map { |field| Verification.human_attribute_name(field, default: field) }.join(", ") %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <strong>Изменений пока нет</strong>
+        <span>История появится после начала и завершения поверки.</span>
+      </div>
+    <% end %>
+  </section>
+<% end %>

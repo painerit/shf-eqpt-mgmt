@@ -1,0 +1,163 @@
+<% page_title "Пункт графика ##{@schedule.id}" %>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__breadcrumb">
+      <%= link_to "Графики поверок", verification_schedules_path %> / Пункт ##{@schedule.id}
+    </div>
+    <h1><%= @schedule.equipment.inventory_number %></h1>
+    <p><%= @schedule.equipment.model %> · плановая поверка на <%= human_date(@schedule.planned_on) %></p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to "К графику", verification_schedules_path, class: "btn btn--ghost" %>
+    <% if policy(@schedule).edit? %>
+      <%= link_to "Изменить", edit_verification_schedule_path(@schedule), class: "btn btn--ghost" %>
+    <% end %>
+    <% if policy(@schedule).approve? && @schedule.planned? %>
+      <%= button_to "Согласовать", approve_verification_schedule_path(@schedule), method: :patch, class: "btn btn--primary" %>
+    <% end %>
+  </div>
+</div>
+
+<section class="card">
+  <header class="card__header">
+    <h2>Сведения о пункте графика</h2>
+    <span class="<%= status_badge_class(@schedule.status) %>">
+      <%= enum_label(VerificationSchedule, :status, @schedule.status) %>
+    </span>
+  </header>
+
+  <div class="detail-grid">
+    <div class="detail-item">
+      <span class="detail-item__label">Прибор</span>
+      <span class="detail-item__value">
+        <%= link_to @schedule.equipment.inventory_number, equipment_path(@schedule.equipment) %>
+      </span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Модель</span>
+      <span class="detail-item__value"><%= @schedule.equipment.model %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Плановая дата</span>
+      <span class="detail-item__value"><%= human_date(@schedule.planned_on) %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Год</span>
+      <span class="detail-item__value"><%= @schedule.period_year %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Ответственный</span>
+      <span class="detail-item__value"><%= @schedule.responsible_user&.display_name || "—" %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Нормативный документ</span>
+      <span class="detail-item__value"><%= @schedule.normative_document&.doc_number || "—" %></span>
+    </div>
+  </div>
+
+  <% if @schedule.notes.present? %>
+    <div class="detail-note">
+      <span class="detail-item__label">Примечания</span>
+      <p><%= simple_format(@schedule.notes) %></p>
+    </div>
+  <% end %>
+</section>
+
+<section class="card">
+  <header class="card__header">
+    <h2>Проведение поверки</h2>
+    <% if @schedule.canceled? %>
+      <span class="badge badge--danger">Пункт отменён</span>
+    <% elsif @schedule.verifications.any? %>
+      <span class="muted">по этому пункту уже есть поверки</span>
+    <% end %>
+  </header>
+
+  <% new_verification = Verification.new(equipment: @schedule.equipment, verification_schedule: @schedule) %>
+  <% if policy(new_verification).create? && !@schedule.canceled? %>
+    <%= button_to "Начать поверку", verifications_path,
+                  method: :post,
+                  params: { verification: { verification_schedule_id: @schedule.id } },
+                  class: "btn btn--primary" %>
+  <% end %>
+
+  <% if @verifications.any? %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>Статус</th>
+            <th>Поверитель</th>
+            <th>Протокол</th>
+            <th>Свидетельство</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @verifications.each do |verification| %>
+            <tr>
+              <td><%= human_date(verification.performed_on) %></td>
+              <td>
+                <span class="<%= status_badge_class(verification.status) %>">
+                  <%= enum_label(Verification, :status, verification.status) %>
+                </span>
+              </td>
+              <td><%= verification.performed_by&.display_name || "—" %></td>
+              <td><%= verification.protocol_number.presence || "—" %></td>
+              <td><%= verification.certificate_number.presence || "—" %></td>
+              <td class="table__actions">
+                <%= link_to "Открыть", verification_path(verification), class: "btn btn--small" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <strong>Поверка ещё не начата</strong>
+      <span>Нажмите «Начать поверку», чтобы внести результаты измерений.</span>
+    </div>
+  <% end %>
+</section>
+
+<section class="card">
+  <header class="card__header">
+    <h2>История изменений</h2>
+    <span class="muted">последние 10 записей</span>
+  </header>
+
+  <% if @audit_logs.any? %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>Пользователь</th>
+            <th>Действие</th>
+            <th>Изменённые поля</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @audit_logs.each do |log| %>
+            <tr>
+              <td><%= human_datetime(log.created_at) %></td>
+              <td><%= log.user&.display_name || "Система" %></td>
+              <td><%= audit_action_label(log.action) %></td>
+              <td>
+                <%= log.changed_fields.map { |field| VerificationSchedule.human_attribute_name(field, default: field) }.join(", ") %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <strong>Изменений пока нет</strong>
+      <span>История появится после редактирования или согласования.</span>
+    </div>
+  <% end %>
+</section>

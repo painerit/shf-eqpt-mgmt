@@ -1,0 +1,152 @@
+<% page_title "Оборудование" %>
+
+<div class="page-header">
+  <div>
+    <h1>Реестр оборудования</h1>
+    <p>СВЧ-приборы, подразделения, ответственные и сроки поверки</p>
+  </div>
+  <% if policy(Equipment).new? %>
+    <div class="page-header__actions">
+      <%= link_to "Добавить прибор", new_equipment_path, class: "btn btn--primary" %>
+    </div>
+  <% end %>
+</div>
+
+<section class="card">
+  <%= form_with url: equipment_index_path, method: :get, local: true, class: "filters" do |form| %>
+    <div class="filters__grid">
+      <div class="field">
+        <%= form.label :q, "Поиск" %>
+        <%= form.search_field :q,
+                              value: params[:q],
+                              placeholder: "Инвентарный или заводской номер, модель" %>
+      </div>
+
+      <div class="field">
+        <%= form.label :equipment_type_id, "Тип оборудования" %>
+        <%= form.select :equipment_type_id,
+                        options_from_collection_for_select(@equipment_types, :id, :name, params[:equipment_type_id]),
+                        { include_blank: "Все типы" } %>
+      </div>
+
+      <div class="field">
+        <%= form.label :manufacturer_id, "Производитель" %>
+        <%= form.select :manufacturer_id,
+                        options_from_collection_for_select(@manufacturers, :id, :name, params[:manufacturer_id]),
+                        { include_blank: "Все производители" } %>
+      </div>
+
+      <div class="field">
+        <%= form.label :department_id, "Подразделение" %>
+        <%= form.select :department_id,
+                        options_from_collection_for_select(@departments, :id, :name, params[:department_id]),
+                        { include_blank: "Все подразделения" } %>
+      </div>
+
+      <div class="field">
+        <%= form.label :status, "Статус" %>
+        <%= form.select :status,
+                        options_for_select(
+                          Equipment.statuses.keys.map { |status| [enum_label(Equipment, :status, status), status] },
+                          params[:status]
+                        ),
+                        { include_blank: "Все статусы" } %>
+      </div>
+
+      <div class="field">
+        <%= form.label :due, "Срок поверки" %>
+        <%= form.select :due,
+                        options_for_select(
+                          [["Просроченные", "overdue"], ["В ближайшие 30 дней", "due_soon"], ["Без даты", "no_date"]],
+                          params[:due]
+                        ),
+                        { include_blank: "Любой срок" } %>
+      </div>
+
+      <div class="field">
+        <%= form.label :sort, "Сортировка" %>
+        <%= form.select :sort,
+                        options_for_select(
+                          [["По сроку поверки", "next_verification_on_asc"],
+                           ["По инвентарному номеру", "inventory_number_asc"],
+                           ["По модели", "model_asc"],
+                           ["Сначала новые", "created_at_desc"]],
+                          params[:sort]
+                        ) %>
+      </div>
+    </div>
+
+    <div class="filters__actions">
+      <%= form.submit "Применить", class: "btn btn--primary" %>
+      <%= link_to "Сбросить", equipment_index_path, class: "btn btn--ghost" %>
+    </div>
+  <% end %>
+</section>
+
+<section class="card">
+  <header class="card__header">
+    <h2>Найдено приборов: <%= @equipment.total_count %></h2>
+  </header>
+
+  <% if @equipment.any? %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Прибор</th>
+            <th>Тип</th>
+            <th>Производитель</th>
+            <th>Подразделение</th>
+            <th>Ответственный</th>
+            <th>Статус</th>
+            <th>Следующая поверка</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @equipment.each do |equipment| %>
+            <tr>
+              <td>
+                <%= link_to equipment.inventory_number, equipment_path(equipment), class: "table__title" %>
+                <span class="muted"><%= equipment.model %> · <%= equipment.serial_number %></span>
+              </td>
+              <td><%= equipment.equipment_type.name %></td>
+              <td><%= equipment.manufacturer.name %></td>
+              <td><%= equipment.department.name %></td>
+              <td><%= equipment.responsible_user&.display_name || "—" %></td>
+              <td>
+                <span class="<%= status_badge_class(equipment.status) %>">
+                  <%= enum_label(Equipment, :status, equipment.status) %>
+                </span>
+              </td>
+              <td>
+                <span><%= human_date(equipment.next_verification_on) %></span>
+                <% if equipment.overdue? %>
+                  <span class="badge badge--danger">Просрочено</span>
+                <% elsif equipment.due_soon? %>
+                  <span class="badge badge--warning">Скоро</span>
+                <% end %>
+              </td>
+              <td class="table__actions">
+                <%= link_to "Открыть", equipment_path(equipment), class: "btn btn--small" %>
+                <% if policy(equipment).edit? %>
+                  <%= link_to "Изменить", edit_equipment_path(equipment), class: "btn btn--small" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-wrap">
+      <%= paginate @equipment %>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <strong>Приборы не найдены</strong>
+      <span>Измените условия поиска или добавьте первый прибор в реестр.</span>
+      <%= link_to "Сбросить фильтры", equipment_index_path, class: "btn btn--small" %>
+    </div>
+  <% end %>
+</section>

@@ -18,3 +18,22 @@ failed:
   completed_at: 2026-01-15 11:00:00
   protocol_number: PR-TEST-000002
   conclusion: Оборудование не соответствует требованиям
+
+draft:
+  equipment: generator
+  verification_schedule: planned
+  performed_by: engineer
+  status: in_progress
+  performed_on: 2026-11-01
+  conclusion:
+
+admin_passed:
+  equipment: admin_generator
+  verification_schedule: admin_planned
+  performed_by: metrologist
+  status: passed
+  performed_on: 2026-02-01
+  completed_at: 2026-02-01 12:00:00
+  protocol_number: PR-TEST-000003
+  certificate_number: SV-TEST-000003
+  conclusion: Оборудование пригодно к эксплуатации

@@ -1,0 +1,221 @@
+<% page_title @equipment.inventory_number %>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__breadcrumb">
+      <%= link_to "Оборудование", equipment_index_path %> / <%= @equipment.inventory_number %>
+    </div>
+    <h1><%= @equipment.inventory_number %></h1>
+    <p><%= @equipment.equipment_type.name %> · <%= @equipment.model %> · <%= @equipment.manufacturer.name %></p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to "К реестру", equipment_index_path, class: "btn btn--ghost" %>
+    <% if policy(@equipment).edit? %>
+      <%= link_to "Изменить", edit_equipment_path(@equipment), class: "btn btn--primary" %>
+    <% end %>
+  </div>
+</div>
+
+<% if @equipment.overdue? %>
+  <div class="flash flash--danger">
+    Поверка просрочена. Срок был <%= human_date(@equipment.next_verification_on) %>.
+  </div>
+<% elsif @equipment.due_soon? %>
+  <div class="flash flash--warning">
+    Поверка требуется в ближайшие 30 дней — до <%= human_date(@equipment.next_verification_on) %>.
+  </div>
+<% end %>
+
+<section class="card">
+  <header class="card__header">
+    <h2>Основные сведения</h2>
+    <span class="<%= status_badge_class(@equipment.status) %>">
+      <%= enum_label(Equipment, :status, @equipment.status) %>
+    </span>
+  </header>
+
+  <div class="detail-grid">
+    <div class="detail-item">
+      <span class="detail-item__label">Инвентарный номер</span>
+      <span class="detail-item__value"><%= @equipment.inventory_number %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Заводской номер</span>
+      <span class="detail-item__value"><%= @equipment.serial_number %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Модель</span>
+      <span class="detail-item__value"><%= @equipment.model %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Тип оборудования</span>
+      <span class="detail-item__value"><%= @equipment.equipment_type.name %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Производитель</span>
+      <span class="detail-item__value"><%= @equipment.manufacturer.name %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Подразделение</span>
+      <span class="detail-item__value"><%= @equipment.department.name %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Ответственный</span>
+      <span class="detail-item__value"><%= @equipment.responsible_user&.display_name || "—" %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Местоположение</span>
+      <span class="detail-item__value"><%= @equipment.location.presence || "—" %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Ввод в эксплуатацию</span>
+      <span class="detail-item__value"><%= human_date(@equipment.commissioned_on) %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Межповерочный интервал</span>
+      <span class="detail-item__value"><%= @equipment.verification_interval_months %> мес.</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Последняя поверка</span>
+      <span class="detail-item__value"><%= human_date(@equipment.last_verified_on) %></span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-item__label">Следующая поверка</span>
+      <span class="detail-item__value"><%= human_date(@equipment.next_verification_on) %></span>
+    </div>
+  </div>
+
+  <% if @equipment.notes.present? %>
+    <div class="detail-note">
+      <span class="detail-item__label">Примечания</span>
+      <p><%= simple_format(@equipment.notes) %></p>
+    </div>
+  <% end %>
+</section>
+
+<section class="card">
+  <header class="card__header">
+    <h2>История поверок</h2>
+    <span class="muted">последние 10 записей</span>
+  </header>
+
+  <% if @verifications.any? %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>Статус</th>
+            <th>Поверитель</th>
+            <th>Протокол</th>
+            <th>Свидетельство</th>
+            <th>Результаты</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @verifications.each do |verification| %>
+            <tr>
+              <td><%= human_date(verification.performed_on) %></td>
+              <td>
+                <span class="<%= status_badge_class(verification.status) %>">
+                  <%= enum_label(Verification, :status, verification.status) %>
+                </span>
+              </td>
+              <td><%= verification.performed_by&.display_name || "—" %></td>
+              <td><%= verification.protocol_number.presence || "—" %></td>
+              <td><%= verification.certificate_number.presence || "—" %></td>
+              <td><%= verification.verification_results.size %> изм.</td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <strong>Поверок пока нет</strong>
+      <span>История появится после проведения первой поверки.</span>
+    </div>
+  <% end %>
+</section>
+
+<section class="card">
+  <header class="card__header">
+    <h2>График поверок</h2>
+    <span class="muted">последние 10 записей</span>
+  </header>
+
+  <% if @schedules.any? %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Плановая дата</th>
+            <th>Статус</th>
+            <th>Ответственный</th>
+            <th>Нормативный документ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @schedules.each do |schedule| %>
+            <tr>
+              <td><%= human_date(schedule.planned_on) %></td>
+              <td>
+                <span class="<%= status_badge_class(schedule.status) %>">
+                  <%= enum_label(VerificationSchedule, :status, schedule.status) %>
+                </span>
+              </td>
+              <td><%= schedule.responsible_user&.display_name || "—" %></td>
+              <td><%= schedule.normative_document&.doc_number || "—" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <strong>График пуст</strong>
+      <span>Для этого прибора ещё не созданы плановые поверки.</span>
+    </div>
+  <% end %>
+</section>
+
+<% unless current_user.customer? %>
+<section class="card">
+  <header class="card__header">
+    <h2>История изменений</h2>
+    <span class="muted">последние 10 записей</span>
+  </header>
+
+  <% if @audit_logs.any? %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>Пользователь</th>
+            <th>Действие</th>
+            <th>Изменённые поля</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @audit_logs.each do |log| %>
+            <tr>
+              <td><%= human_datetime(log.created_at) %></td>
+              <td><%= log.user&.display_name || "Система" %></td>
+              <td><%= audit_action_label(log.action) %></td>
+              <td>
+                <%= log.changed_fields.map { |field| Equipment.human_attribute_name(field, default: field) }.join(", ") %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <strong>Изменений пока нет</strong>
+      <span>Аудит начнёт заполняться после редактирования прибора.</span>
+    </div>
+  <% end %>
+</section>
+<% end %>

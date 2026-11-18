@@ -1,0 +1,17 @@
+<% page_title "Новый пункт графика" %>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__breadcrumb">
+      <%= link_to "Графики поверок", verification_schedules_path %> / Новый пункт
+    </div>
+    <h1>Новый пункт графика</h1>
+    <p>Планирование поверки конкретного прибора</p>
+  </div>
+</div>
+
+<section class="card">
+  <%= form_with model: @schedule, url: verification_schedules_path, local: true, class: "form" do |form| %>
+    <%= render "form", form: form %>
+  <% end %>
+</section>

@@ -22,15 +22,20 @@
           <nav class="nav">
             <%= link_to "Панель управления", root_path, class: nav_link_class(root_path) %>
 
-            <span class="nav-link nav-link--disabled">
-              Оборудование <span class="nav-badge">скоро</span>
-            </span>
-            <span class="nav-link nav-link--disabled">
-              Графики <span class="nav-badge">скоро</span>
-            </span>
-            <span class="nav-link nav-link--disabled">
-              Поверки <span class="nav-badge">скоро</span>
-            </span>
+            <%= link_to "Оборудование",
+                        equipment_index_path,
+                        class: controller_name == "equipment" ? "nav-link nav-link--active" : "nav-link" %>
+
+            <% unless current_user.customer? %>
+              <%= link_to "Графики поверок",
+                          verification_schedules_path,
+                          class: controller_name == "verification_schedules" ? "nav-link nav-link--active" : "nav-link" %>
+            <% end %>
+
+            <%= link_to "Поверки",
+                        verifications_path,
+                        class: controller_name == "verifications" ? "nav-link nav-link--active" : "nav-link" %>
+
             <span class="nav-link nav-link--disabled">
               Уведомления
               <% if unread_notifications_count.positive? %>

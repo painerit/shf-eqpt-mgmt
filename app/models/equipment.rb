@@ -13,6 +13,7 @@ class Equipment < ApplicationRecord
            inverse_of: :equipment,
            dependent: :restrict_with_error
   has_many :notifications, as: :notifiable, dependent: :destroy
+  has_many :audit_logs, as: :auditable, dependent: :destroy
 
   enum status: {
     in_service: "in_service",
@@ -30,8 +31,8 @@ class Equipment < ApplicationRecord
             numericality: { only_integer: true, greater_than: 0 }
   validate :next_verification_after_last
 
-  scope :due_soon, ->(date = Date.current) { where(next_verification_on: date..date + 30.days) }
-  scope :overdue, ->(date = Date.current) { where(next_verification_on: ...date) }
+  scope :due_soon, ->(date = Date.current) { where.not(status: :decommissioned).where(next_verification_on: date..date + 30.days) }
+  scope :overdue, ->(date = Date.current) { where.not(status: :decommissioned).where(next_verification_on: ...date) }
 
   def overdue?
     next_verification_on.present? && next_verification_on < Date.current
@@ -45,6 +46,10 @@ class Equipment < ApplicationRecord
     return if next_verification_on.blank?
 
     (next_verification_on - Date.current).to_i
+  end
+
+  def display_name
+    "#{inventory_number} — #{model}"
   end
 
   def apply_verification_result!(performed_on:, passed:)
