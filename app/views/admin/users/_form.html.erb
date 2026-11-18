@@ -1,0 +1,60 @@
+<%= render "shared/errors", object: @user %>
+
+<div class="form-grid">
+  <div class="field">
+    <%= form.label :full_name, "ФИО" %>
+    <%= form.text_field :full_name, required: true, autocomplete: "name" %>
+  </div>
+
+  <div class="field">
+    <%= form.label :email, "Электронная почта" %>
+    <%= form.email_field :email, required: true, autocomplete: "email" %>
+  </div>
+
+  <div class="field">
+    <%= form.label :phone, "Телефон" %>
+    <%= form.telephone_field :phone, autocomplete: "tel" %>
+  </div>
+
+  <div class="field">
+    <%= form.label :role_id, "Роль" %>
+    <%= form.collection_select :role_id, @roles, :id, :name, {}, required: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :department_id, "Подразделение" %>
+    <%= form.collection_select :department_id, @departments, :id, :name, { include_blank: "Не выбрано" } %>
+  </div>
+
+  <div class="field field--checkbox">
+    <label class="checkbox">
+      <%= form.check_box :active %>
+      <span>Учётная запись активна</span>
+    </label>
+  </div>
+
+  <div class="field">
+    <%= form.label :password, form.object.new_record? ? "Пароль" : "Новый пароль" %>
+    <%= form.password_field :password,
+                            autocomplete: "new-password",
+                            minlength: 8,
+                            required: form.object.new_record? %>
+    <span class="field__hint">
+      <%= form.object.new_record? ? "Минимум 8 символов" : "Оставьте пустым, чтобы не менять пароль" %>
+    </span>
+  </div>
+
+  <div class="field">
+    <%= form.label :password_confirmation, "Подтверждение пароля" %>
+    <%= form.password_field :password_confirmation,
+                            autocomplete: "new-password",
+                            minlength: 8,
+                            required: form.object.new_record? %>
+  </div>
+</div>
+
+<div class="form-actions">
+  <%= form.submit form.object.new_record? ? "Создать пользователя" : "Сохранить изменения",
+                  class: "btn btn--primary" %>
+  <%= link_to "Отмена", admin_users_path, class: "btn btn--ghost" %>
+</div>

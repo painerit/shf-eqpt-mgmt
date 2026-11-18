@@ -1,0 +1,62 @@
+<%= page_title "Пользователи" %>
+
+<div class="page-header">
+  <div>
+    <h1>Пользователи</h1>
+    <p>Управление учётными записями, ролями и подразделениями</p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to "Добавить пользователя", new_admin_user_path, class: "btn btn--primary" %>
+  </div>
+</div>
+
+<section class="card">
+  <% if @users.any? %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Пользователь</th>
+            <th>Email</th>
+            <th>Роль</th>
+            <th>Подразделение</th>
+            <th>Статус</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @users.each do |user| %>
+            <tr>
+              <td>
+                <strong><%= user.display_name %></strong>
+                <span class="muted"><%= user.phone.presence || "телефон не указан" %></span>
+              </td>
+              <td><%= user.email %></td>
+              <td><%= user.role&.name || "—" %></td>
+              <td><%= user.department&.name || "—" %></td>
+              <td>
+                <span class="badge <%= user.active? ? "badge--success" : "badge--neutral" %>">
+                  <%= user.active? ? "Активен" : "Отключён" %>
+                </span>
+              </td>
+              <td class="table__actions">
+                <%= link_to "Изменить", edit_admin_user_path(user), class: "btn btn--small" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @users.total_pages > 1 %>
+      <div class="pagination-wrap">
+        <%= paginate @users %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="empty-state">
+      <strong>Пользователей пока нет</strong>
+      <span>Добавьте первую учётную запись.</span>
+    </div>
+  <% end %>
+</section>

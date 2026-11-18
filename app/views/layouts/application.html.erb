@@ -1,15 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
   <head>
-    <title>App</title>
+    <meta charset="utf-8">
+    <title><%= content_for?(:title) ? yield(:title) : t("app.title") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%= stylesheet_link_tag "application" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   </head>
 
   <body>
-    <%= yield %>
+    <% if current_user %>
+      <div class="app-shell">
+        <aside class="sidebar">
+          <div class="brand">
+            <span class="brand__mark">СВЧ</span>
+            <span class="brand__text">Поверка</span>
+          </div>
+
+          <nav class="nav">
+            <%= link_to "Панель управления", root_path, class: nav_link_class(root_path) %>
+
+            <span class="nav-link nav-link--disabled">
+              Оборудование <span class="nav-badge">скоро</span>
+            </span>
+            <span class="nav-link nav-link--disabled">
+              Графики <span class="nav-badge">скоро</span>
+            </span>
+            <span class="nav-link nav-link--disabled">
+              Поверки <span class="nav-badge">скоро</span>
+            </span>
+            <span class="nav-link nav-link--disabled">
+              Уведомления
+              <% if unread_notifications_count.positive? %>
+                <span class="nav-badge nav-badge--accent"><%= unread_notifications_count %></span>
+              <% end %>
+            </span>
+
+            <% if current_user.admin? %>
+              <div class="nav-section">Администрирование</div>
+              <%= link_to "Пользователи", admin_users_path, class: nav_link_class(admin_users_path) %>
+            <% end %>
+          </nav>
+
+          <div class="sidebar__footer">
+            <div class="sidebar__hint">Демонстрационный контур</div>
+            <div class="sidebar__version">v0.2</div>
+          </div>
+        </aside>
+
+        <div class="app-main">
+          <header class="topbar">
+            <div class="topbar__left">
+              <span class="topbar__eyebrow">Метрологическая служба</span>
+              <span class="topbar__title">Управление поверкой СВЧ-оборудования</span>
+            </div>
+
+            <div class="topbar__right">
+              <div class="user-chip">
+                <span class="avatar"><%= user_initials(current_user) %></span>
+                <span class="user-chip__info">
+                  <span class="user-chip__name"><%= current_user.display_name %></span>
+                  <span class="user-chip__role"><%= current_user.role&.name %></span>
+                </span>
+              </div>
+
+              <%= button_to "Выйти", logout_path, method: :delete, class: "btn btn--ghost" %>
+            </div>
+          </header>
+
+          <main class="content">
+            <%= render "shared/flash" %>
+            <%= yield %>
+          </main>
+        </div>
+      </div>
+    <% else %>
+      <main class="auth-shell">
+        <%= render "shared/flash" %>
+        <%= yield %>
+      </main>
+    <% end %>
   </body>
 </html>

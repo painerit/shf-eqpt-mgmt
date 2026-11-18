@@ -27,3 +27,18 @@ overdue_generator:
   last_verified_on: 2025-01-15
   next_verification_on: 2026-01-15
   location: Лаборатория 2
+
+admin_generator:
+  inventory_number: INV-TEST-003
+  serial_number: SN-TEST-003
+  model: N5183B
+  equipment_type: generator
+  manufacturer: keysight
+  department: metrology
+  responsible_user: admin
+  status: in_service
+  commissioned_on: 2023-01-10
+  verification_interval_months: 12
+  last_verified_on: 2025-01-10
+  next_verification_on: 2026-01-10
+  location: Лаборатория 3

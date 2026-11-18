@@ -137,4 +137,12 @@ ru:
 
   app:
     title: "Система управления поверкой СВЧ-оборудования"
+    short_title: "СВЧ-поверка"
     company: "Метрологическая служба"
+
+  common:
+    days:
+      one: "%{count} день"
+      few: "%{count} дня"
+      many: "%{count} дней"
+      other: "%{count} дня"

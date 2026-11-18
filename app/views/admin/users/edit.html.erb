@@ -1,0 +1,14 @@
+<% page_title "Редактирование пользователя" %>
+
+<div class="page-header">
+  <div>
+    <h1>Редактирование пользователя</h1>
+    <p><%= @user.display_name %> · <%= @user.email %></p>
+  </div>
+</div>
+
+<section class="card">
+  <%= form_with model: @user, url: admin_user_path(@user), method: :patch, local: true, class: "form" do |form| %>
+    <%= render "form", form: form %>
+  <% end %>
+</section>

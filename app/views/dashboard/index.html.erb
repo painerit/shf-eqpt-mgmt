@@ -1,0 +1,217 @@
+<% page_title "Панель управления" %>
+
+<div class="page-header">
+  <div>
+    <h1>Панель управления</h1>
+    <p>Сводка по реестру СВЧ-оборудования и срокам поверки</p>
+  </div>
+  <div class="page-header__meta">
+    Сегодня <strong><%= human_date(Date.current) %></strong>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-card__label">Всего оборудования</span>
+    <span class="stat-card__value"><%= @equipment_total %></span>
+    <span class="stat-card__hint">в доступном реестре</span>
+  </div>
+
+  <div class="stat-card stat-card--danger">
+    <span class="stat-card__label">Просрочено</span>
+    <span class="stat-card__value"><%= @stats[:overdue] %></span>
+    <span class="stat-card__hint">требуется поверка</span>
+  </div>
+
+  <div class="stat-card stat-card--warning">
+    <span class="stat-card__label">Скоро поверка</span>
+    <span class="stat-card__value"><%= @stats[:due_soon] %></span>
+    <span class="stat-card__hint">в ближайшие 30 дней</span>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-card__label">Поверки за месяц</span>
+    <span class="stat-card__value"><%= @stats[:verifications_this_month] %></span>
+    <span class="stat-card__hint">
+      пригодно: <%= @stats[:passed] %>, непригодно: <%= @stats[:failed] %>
+    </span>
+  </div>
+</div>
+
+<div class="dashboard-grid">
+  <section class="card">
+    <header class="card__header">
+      <h2>Просроченные поверки</h2>
+      <span class="badge badge--danger"><%= @overdue_equipment.size %></span>
+    </header>
+
+    <% if @overdue_equipment.any? %>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Прибор</th>
+              <th>Подразделение</th>
+              <th>Срок</th>
+              <th>Просрочка</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @overdue_equipment.each do |equipment| %>
+              <tr>
+                <td>
+                  <strong><%= equipment.inventory_number %></strong>
+                  <span class="muted"><%= equipment.model %></span>
+                </td>
+                <td><%= equipment.department.name %></td>
+                <td><%= human_date(equipment.next_verification_on) %></td>
+                <td class="text-danger">
+                  <%= days_label(equipment.next_verification_in_days.abs) %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <strong>Просроченных поверок нет</strong>
+        <span>Все приборы имеют актуальный срок поверки.</span>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="card">
+    <header class="card__header">
+      <h2>Ближайшие поверки</h2>
+      <span class="badge badge--warning"><%= @due_soon_equipment.size %></span>
+    </header>
+
+    <% if @due_soon_equipment.any? %>
+      <ul class="list">
+        <% @due_soon_equipment.each do |equipment| %>
+          <li class="list__item">
+            <div>
+              <strong><%= equipment.inventory_number %></strong>
+              <span class="muted"><%= equipment.equipment_type.name %> · <%= equipment.model %></span>
+            </div>
+            <div class="list__meta">
+              <span><%= human_date(equipment.next_verification_on) %></span>
+              <span class="badge badge--warning">
+                через <%= days_label(equipment.next_verification_in_days) %>
+              </span>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="empty-state">
+        <strong>В ближайшие 30 дней поверок не планируется</strong>
+        <span>Можно перейти к формированию графика на следующий период.</span>
+      </div>
+    <% end %>
+  </section>
+</div>
+
+<div class="dashboard-grid">
+  <section class="card">
+    <header class="card__header">
+      <h2>Ближайшие пункты графика</h2>
+      <span class="muted">до 8 записей</span>
+    </header>
+
+    <% if @upcoming_schedules.any? %>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Прибор</th>
+              <th>Плановая дата</th>
+              <th>Ответственный</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @upcoming_schedules.each do |schedule| %>
+              <tr>
+                <td>
+                  <strong><%= schedule.equipment.inventory_number %></strong>
+                  <span class="muted"><%= schedule.equipment.model %></span>
+                </td>
+                <td><%= human_date(schedule.planned_on) %></td>
+                <td><%= schedule.responsible_user&.display_name || "—" %></td>
+                <td>
+                  <span class="<%= status_badge_class(schedule.status) %>">
+                    <%= enum_label(VerificationSchedule, :status, schedule.status) %>
+                  </span>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <strong>График пока пуст</strong>
+        <span>Пункты графика появятся после планирования поверок.</span>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="card">
+    <header class="card__header">
+      <h2>Последние поверки</h2>
+      <span class="muted">до 8 записей</span>
+    </header>
+
+    <% if @recent_verifications.any? %>
+      <ul class="list">
+        <% @recent_verifications.each do |verification| %>
+          <li class="list__item">
+            <div>
+              <strong><%= verification.equipment.inventory_number %></strong>
+              <span class="muted">
+                <%= human_date(verification.performed_on) %> ·
+                <%= verification.performed_by&.display_name || "—" %>
+              </span>
+            </div>
+            <div class="list__meta">
+              <span class="<%= status_badge_class(verification.status) %>">
+                <%= enum_label(Verification, :status, verification.status) %>
+              </span>
+              <span class="muted">
+                <%= verification.certificate_number.presence || "без свидетельства" %>
+              </span>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="empty-state">
+        <strong>Завершённых поверок пока нет</strong>
+        <span>Результаты появятся после проведения первой поверки.</span>
+      </div>
+    <% end %>
+  </section>
+</div>
+
+<% if @notifications.any? %>
+  <section class="card">
+    <header class="card__header">
+      <h2>Уведомления</h2>
+      <span class="badge badge--warning"><%= @unread_notifications_count %></span>
+    </header>
+
+    <ul class="list">
+      <% @notifications.each do |notification| %>
+        <li class="list__item">
+          <div>
+            <strong><%= notification.message %></strong>
+            <span class="muted">Срок: <%= human_date(notification.due_on) %></span>
+          </div>
+          <span class="badge badge--neutral"><%= notification_kind_label(notification.kind) %></span>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>

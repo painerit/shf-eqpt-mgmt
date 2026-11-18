@@ -1,6 +1,16 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  root "dashboard#index"
 
-  # Defines the root path route ("/")
-  # root "articles#index"
+  get "login", to: "sessions#new", as: :login
+  post "login", to: "sessions#create"
+  delete "logout", to: "sessions#destroy", as: :logout
+
+  get "signup", to: "registrations#new", as: :signup
+  post "signup", to: "registrations#create"
+
+  get "up", to: "health#show", as: :health_check
+
+  namespace :admin do
+    resources :users, only: [:index, :new, :create, :edit, :update]
+  end
 end

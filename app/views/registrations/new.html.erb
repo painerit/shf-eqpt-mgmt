@@ -1,0 +1,53 @@
+<% page_title "Регистрация" %>
+
+<div class="auth-card auth-card--wide">
+  <div class="auth-card__header">
+    <span class="brand__mark brand__mark--large">СВЧ</span>
+    <h1>Регистрация заказчика</h1>
+    <p>Создайте аккаунт для просмотра состояния оборудования</p>
+  </div>
+
+  <%= form_with model: @user, url: signup_path, method: :post, local: true, class: "form" do |form| %>
+    <%= render "shared/errors", object: @user %>
+
+    <div class="form-grid">
+      <div class="field">
+        <%= form.label :full_name, "ФИО" %>
+        <%= form.text_field :full_name, autofocus: true, autocomplete: "name", required: true %>
+      </div>
+
+      <div class="field">
+        <%= form.label :email, "Электронная почта" %>
+        <%= form.email_field :email, autocomplete: "email", required: true %>
+      </div>
+
+      <div class="field">
+        <%= form.label :phone, "Телефон" %>
+        <%= form.telephone_field :phone, autocomplete: "tel" %>
+      </div>
+
+      <div class="field">
+        <%= form.label :department_id, "Подразделение" %>
+        <%= form.collection_select :department_id, @departments, :id, :name, { include_blank: "Не выбрано" } %>
+      </div>
+
+      <div class="field">
+        <%= form.label :password, "Пароль" %>
+        <%= form.password_field :password, autocomplete: "new-password", minlength: 8, required: true %>
+        <span class="field__hint">Минимум 8 символов</span>
+      </div>
+
+      <div class="field">
+        <%= form.label :password_confirmation, "Подтверждение пароля" %>
+        <%= form.password_field :password_confirmation, autocomplete: "new-password", minlength: 8, required: true %>
+      </div>
+    </div>
+
+    <%= form.submit "Создать аккаунт", class: "btn btn--primary btn--block" %>
+  <% end %>
+
+  <div class="auth-card__footer">
+    <span>Уже есть аккаунт?</span>
+    <%= link_to "Войти", login_path %>
+  </div>
+</div>

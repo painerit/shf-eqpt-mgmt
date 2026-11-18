@@ -1,0 +1,14 @@
+<% page_title "Новый пользователь" %>
+
+<div class="page-header">
+  <div>
+    <h1>Новый пользователь</h1>
+    <p>Создание учётной записи сотрудника или заказчика</p>
+  </div>
+</div>
+
+<section class="card">
+  <%= form_with model: @user, url: admin_users_path, local: true, class: "form" do |form| %>
+    <%= render "form", form: form %>
+  <% end %>
+</section>
