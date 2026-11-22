@@ -49,6 +49,9 @@ module Verifications
 
         verification
       end
+
+      PublishVerificationJob.perform_later(verification.id)
+      verification
     end
 
     private

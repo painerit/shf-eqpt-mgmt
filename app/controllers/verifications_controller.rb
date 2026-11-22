@@ -1,5 +1,5 @@
 class VerificationsController < ApplicationController
-  before_action :set_verification, only: [:show, :edit, :update, :start, :complete, :cancel, :protocol]
+  before_action :set_verification, only: [:show, :edit, :update, :start, :complete, :cancel, :protocol, :publish]
 
   after_action :verify_authorized, except: :index
   after_action :verify_policy_scoped, only: :index
@@ -111,6 +111,14 @@ class VerificationsController < ApplicationController
                   disposition: "inline"
       end
     end
+  end
+
+  def publish
+    authorize @verification, :publish?
+
+    PublishVerificationJob.perform_later(@verification.id)
+    redirect_to verification_path(@verification),
+                notice: "Публикация во внешний реестр поставлена в очередь."
   end
 
   private

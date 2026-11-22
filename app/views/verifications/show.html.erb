@@ -23,6 +23,12 @@
       <%= link_to "Протокол PDF", protocol_verification_path(@verification, format: :pdf), class: "btn" %>
       <%= link_to "Печатная форма", protocol_verification_path(@verification), class: "btn btn--ghost", target: "_blank" %>
     <% end %>
+    <% if policy(@verification).publish? %>
+      <%= button_to(@verification.external_id.present? ? "Отправить повторно" : "Отправить во внешний реестр",
+                    publish_verification_path(@verification),
+                    method: :post,
+                    class: "btn") %>
+    <% end %>
     <% if policy(@verification).cancel? %>
       <%= button_to "Отменить", cancel_verification_path(@verification), method: :patch, class: "btn btn--ghost" %>
     <% end %>
@@ -81,6 +87,42 @@
     </div>
   <% end %>
 </section>
+
+<% unless current_user.customer? %>
+  <section class="card">
+    <header class="card__header">
+      <h2>Внешний реестр</h2>
+      <% if @verification.external_id.present? %>
+        <span class="badge badge--success"><%= external_status_label(@verification.external_status) %></span>
+      <% elsif @verification.external_status == "failed" %>
+        <span class="badge badge--danger"><%= external_status_label(@verification.external_status) %></span>
+      <% else %>
+        <span class="badge badge--neutral">Не отправлено</span>
+      <% end %>
+    </header>
+
+    <div class="detail-grid">
+      <div class="detail-item">
+        <span class="detail-item__label">Идентификатор</span>
+        <span class="detail-item__value"><%= @verification.external_id.presence || "—" %></span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-item__label">Статус</span>
+        <span class="detail-item__value"><%= @verification.external_status.present? ? external_status_label(@verification.external_status) : "—" %></span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-item__label">Синхронизировано</span>
+        <span class="detail-item__value"><%= human_datetime(@verification.external_synced_at) %></span>
+      </div>
+    </div>
+
+    <% if @verification.external_error.present? %>
+      <div class="flash flash--danger">
+        <%= @verification.external_error %>
+      </div>
+    <% end %>
+  </section>
+<% end %>
 
 <section class="card">
   <header class="card__header">

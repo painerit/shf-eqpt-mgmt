@@ -18,6 +18,7 @@ module Verifications
       assert_equal "completed", verification_schedules(:planned).reload.status
       assert_equal "complete", result.audit_logs.last.action
       assert_equal 1, DocumentCounter.find_by!(kind: "verification", year: 2026).value
+      assert_enqueued_with(job: PublishVerificationJob, args: [result.id])
     end
 
     test "completes failed verification without certificate" do

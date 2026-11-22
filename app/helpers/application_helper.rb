@@ -76,4 +76,11 @@ module ApplicationHelper
       "approve" => "Согласование"
     }.fetch(action.to_s, action.to_s.humanize)
   end
+
+  def external_status_label(status)
+    {
+      "accepted" => "Принято внешним реестром",
+      "failed" => "Ошибка синхронизации"
+    }.fetch(status.to_s, status.to_s.humanize)
+  end
 end

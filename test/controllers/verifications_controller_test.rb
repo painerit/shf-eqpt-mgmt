@@ -183,4 +183,24 @@ class VerificationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to verification_path(verification)
     assert_equal "canceled", verification.reload.status
   end
+
+  test "admin enqueues external publication" do
+    sign_in_as users(:admin)
+    verification = verifications(:passed)
+
+    assert_enqueued_with(job: PublishVerificationJob, args: [verification.id]) do
+      post publish_verification_path(verification)
+    end
+
+    assert_redirected_to verification_path(verification)
+  end
+
+  test "engineer cannot publish verification" do
+    sign_in_as users(:engineer)
+    verification = verifications(:passed)
+
+    post publish_verification_path(verification)
+
+    assert_redirected_to root_path
+  end
 end

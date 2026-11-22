@@ -27,6 +27,7 @@ Rails.application.routes.draw do
       patch :start
       patch :complete
       patch :cancel
+      post :publish
       get :protocol
     end
   end

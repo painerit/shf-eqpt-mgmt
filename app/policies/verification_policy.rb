@@ -43,6 +43,10 @@ class VerificationPolicy < ApplicationPolicy
     show?
   end
 
+  def publish?
+    record.completed? && (user.admin? || user.metrologist?)
+  end
+
   class Scope < Scope
     def resolve
       if user.admin? || user.metrologist?

@@ -70,4 +70,11 @@ class VerificationPolicyTest < ActiveSupport::TestCase
     assert_includes resolved, verifications(:passed)
     assert_not_includes resolved, verifications(:admin_passed)
   end
+
+  test "only staff can publish completed verification" do
+    assert VerificationPolicy.new(users(:admin), verifications(:passed)).publish?
+    assert VerificationPolicy.new(users(:metrologist), verifications(:passed)).publish?
+    assert_not VerificationPolicy.new(users(:engineer), verifications(:passed)).publish?
+    assert_not VerificationPolicy.new(users(:admin), verifications(:draft)).publish?
+  end
 end
