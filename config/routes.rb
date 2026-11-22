@@ -31,6 +31,21 @@ Rails.application.routes.draw do
     end
   end
 
+  namespace :api do
+    namespace :v1 do
+      post "auth/login", to: "auth#create"
+
+      resources :equipment, only: [:index, :show] do
+        member do
+          get :verifications
+        end
+      end
+
+      resources :verification_schedules, only: [:index]
+      resources :verifications, only: [:index, :show]
+    end
+  end
+
   namespace :admin do
     resources :users, only: [:index, :new, :create, :edit, :update]
   end

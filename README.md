@@ -52,10 +52,9 @@ docker compose exec web bin/rails zeitwerk:check
 
 ## Текущее состояние
 
-Четвёртая итерация: добавлены графики поверок, проведение поверок с результатами
-измерений, транзакционное завершение с блокировкой строки, генерация номеров
-протоколов и свидетельств, печатная форма и PDF-протокол.
-REST API и интеграции будут добавлены следующими итерациями.
+Пятая итерация: добавлен защищённый REST API `/api/v1` с JWT-аутентификацией,
+фильтрами, пагинацией и сериализацией оборудования, графиков и поверок.
+Интеграция с внешним измерительным API будет добавлена следующей итерацией.
 
 ### Схема данных
 
@@ -101,8 +100,11 @@ REST API и интеграции будут добавлены следующи�
 - завершение поверки в транзакции `READ COMMITTED` с блокировкой строки;
 - генерация номеров протокола и свидетельства через счётчик с `FOR UPDATE`;
 - печатная HTML-форма протокола и PDF с поддержкой кириллицы;
+- REST API `/api/v1` с JWT-аутентификацией;
+- API оборудования, графиков и поверок с фильтрами и пагинацией;
+- сериализаторы API и единый формат ошибок `401/403/404/422`;
 - health endpoint `/up`;
-- 132 теста: модели, контроллеры, запросы, сервисы, доступы, политики;
+- 160 тестов: модели, контроллеры, API, запросы, сервисы, доступы, политики;
 - Docker Compose с healthcheck PostgreSQL и автоматическим `db:prepare`;
 - русская локаль и часовой пояс Москвы;
 - фиксация зависимостей `json ~> 2.6` и `minitest ~> 5.20` для совместимости с Rails 7.0.
@@ -120,14 +122,104 @@ REST API и интеграции будут добавлены следующи�
 | Инженер | `engineer@example.com` |
 | Заказчик | `customer@example.com` |
 
+## REST API
+
+Базовый префикс: `/api/v1`. Все endpoints, кроме входа, требуют заголовок:
+
+```http
+Authorization: Bearer <token>
+```
+
+Получить токен:
+
+```bash
+curl -s -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"password123"}'
+```
+
+Пример ответа:
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9...",
+  "token_type": "Bearer",
+  "expires_at": "2026-11-19T18:12:08+03:00",
+  "user": {
+    "id": 1,
+    "email": "admin@example.com",
+    "full_name": "Администратор Системы",
+    "role": "Администратор",
+    "department": "Метрологическая служба"
+  }
+}
+```
+
+Доступные endpoints:
+
+| Метод | Endpoint | Назначение |
+|---|---|---|
+| POST | `/api/v1/auth/login` | Получение JWT |
+| GET | `/api/v1/equipment` | Реестр оборудования |
+| GET | `/api/v1/equipment/:id` | Карточка оборудования и последние поверки |
+| GET | `/api/v1/equipment/:id/verifications` | История поверок прибора |
+| GET | `/api/v1/verification_schedules` | Графики поверок |
+| GET | `/api/v1/verifications` | Список поверок |
+| GET | `/api/v1/verifications/:id` | Поверка с результатами измерений |
+
+Поддерживаются фильтры:
+
+- оборудование: `q`, `equipment_type_id`, `manufacturer_id`, `department_id`, `status`, `due`;
+- графики: `q`, `department_id`, `period_year`, `status`;
+- поверки: `q`, `department_id`, `status`, `date_from`, `date_to`;
+- пагинация: `page`, `per_page` (по умолчанию 20, максимум 100).
+
+Пример:
+
+```bash
+TOKEN="<token из ответа login>"
+
+curl -s "http://localhost:3000/api/v1/equipment?due=overdue&per_page=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Формат списка:
+
+```json
+{
+  "data": [],
+  "meta": {
+    "page": 1,
+    "per_page": 20,
+    "total": 32,
+    "total_pages": 2
+  }
+}
+```
+
+Формат ошибки:
+
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Требуется авторизация"
+  }
+}
+```
+
+JWT подписывается секретом из `JWT_SECRET`, а при его отсутствии — `Rails secret_key_base`.
+Для production рекомендуется задать отдельный `JWT_SECRET`.
+
 ## Структура проекта
 
 ```
-app/controllers/      контроллеры и админ-раздел
+app/controllers/      контроллеры, API и админ-раздел
 app/models/           доменные модели
 app/policies/         Pundit-политики доступа
 app/queries/          query-объекты поиска и фильтрации
-app/services/         транзакции, генерация графиков и PDF-протоколов
+app/serializers/      JSON-сериализаторы REST API
+app/services/         транзакции, JWT, генерация графиков и PDF-протоколов
 app/views/            ERB-шаблоны и layout
 db/migrate/           миграции
 db/seeds.rb           демонстрационные данные
@@ -142,7 +234,7 @@ config/locales/ru.yml русские подписи
 - [x] Итерация 2. Аутентификация, роли, layout, dashboard.
 - [x] Итерация 3. Реестр оборудования: CRUD, поиск, фильтры.
 - [x] Итерация 4. Графики и поверки, транзакции и блокировки.
-- [ ] Итерация 5. REST API с JWT.
+- [x] Итерация 5. REST API с JWT.
 - [ ] Итерация 6. Интеграция с внешним API.
 - [ ] Итерация 7. Уведомления и аудит в интерфейсе.
 - [ ] Итерация 8. CI, документация, деплой.

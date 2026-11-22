@@ -23,4 +23,8 @@ class ActionDispatch::IntegrationTest
   def sign_in_as(user, password: "password123")
     post login_path, params: { email: user.email, password: password }
   end
+
+  def api_auth_headers(user)
+    { "Authorization" => "Bearer #{JsonWebToken.encode({ user_id: user.id })}" }
+  end
 end

@@ -7,7 +7,7 @@ class VerificationScheduleQuery
   def call
     relation = scope
                .includes(:equipment, :responsible_user, :normative_document)
-               .left_joins(:equipment)
+    relation = relation.left_joins(:equipment) unless relation.joins_values.include?(:equipment)
 
     relation = search(relation)
     relation = filter_department(relation)
