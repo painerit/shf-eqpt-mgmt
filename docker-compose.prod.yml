@@ -1,0 +1,55 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sw_verification_production}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-sw_verification_production}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    restart: unless-stopped
+    command: >
+      bash -c "rm -f tmp/pids/server.pid &&
+      bin/rails db:create db:migrate &&
+      bin/rails app:bootstrap &&
+      bin/rails assets:precompile &&
+      bundle exec rails server -b 0.0.0.0"
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      RAILS_ENV: production
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY:?RAILS_MASTER_KEY is required}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:?SECRET_KEY_BASE is required}
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-sw_verification_production}
+      RAILS_SERVE_STATIC_FILES: "true"
+      RAILS_LOG_TO_STDOUT: "true"
+      RAILS_MAX_THREADS: ${RAILS_MAX_THREADS:-5}
+      FORCE_SSL: ${FORCE_SSL:-false}
+      APP_HOST: ${APP_HOST:-localhost}
+      JWT_SECRET: ${JWT_SECRET}
+      REGISTRY_API_FAKE: ${REGISTRY_API_FAKE:-false}
+      REGISTRY_API_BASE_URL: ${REGISTRY_API_BASE_URL}
+      REGISTRY_API_TOKEN: ${REGISTRY_API_TOKEN}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_NAME: "${ADMIN_NAME:-Администратор Системы}"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data_prod:

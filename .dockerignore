@@ -2,6 +2,8 @@
 .gitignore
 .kilo
 .env
+.env.production
+.env.*.local
 log/*
 tmp/*
 storage/*

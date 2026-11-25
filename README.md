@@ -52,9 +52,9 @@ docker compose exec web bin/rails zeitwerk:check
 
 ## Текущее состояние
 
-Седьмая итерация: добавлены уведомления о сроках поверки с ручным сканированием,
-отметкой прочтения и глобальный журнал аудита для администратора с фильтрами.
-Следующая итерация — CI, документация и подготовка деплоя.
+Восьмая итерация: добавлены CI, production Docker Compose, bootstrap-задача без
+демонстрационных данных и документация по архитектуре, тестированию и деплою.
+Проект готов к локальной демонстрации и развёртыванию на VPS с Docker.
 
 ### Схема данных
 
@@ -113,6 +113,9 @@ docker compose exec web bin/rails zeitwerk:check
 - отметка одного или всех уведомлений как прочитанных;
 - глобальный журнал аудита для администратора с фильтрами по пользователю,
   действию, объекту и дате;
+- CI на GitHub Actions с PostgreSQL 15;
+- production Docker Compose с healthcheck и bootstrap-задачей;
+- документация по архитектуре, модели данных, тестированию и деплою;
 - health endpoint `/up`;
 - 198 тестов: модели, контроллеры, API, запросы, сервисы, задания, доступы, политики;
 - Docker Compose с healthcheck PostgreSQL и автоматическим `db:prepare`;
@@ -262,6 +265,24 @@ docker compose exec web bin/rails notifications:scan
 пользователю, действию, типу объекта и диапазону дат. Детальная запись показывает
 JSON с изменениями, IP-адрес и User-Agent.
 
+## Production
+
+```bash
+cp .env.production.example .env.production
+# заполните секреты в .env.production
+docker compose --env-file .env.production -f docker-compose.prod.yml up --build -d
+```
+
+При старте создаются база, справочники и администратор без демо-оборудования.
+Подробности: [docs/deployment.md](docs/deployment.md).
+
+## Документация
+
+- [Архитектура](docs/architecture.md)
+- [Модель данных](docs/data-model.md)
+- [Тестирование](docs/testing.md)
+- [Развёртывание](docs/deployment.md)
+
 ## Структура проекта
 
 ```
@@ -274,6 +295,7 @@ app/services/         транзакции, JWT, интеграции, граф�
 app/jobs/             фоновые задания и публикация во внешний реестр
 app/views/            ERB-шаблоны и layout
 lib/tasks/            rake-задачи обслуживания
+docs/                 архитектура, модель данных, тесты, деплой
 db/migrate/           миграции
 db/seeds.rb           демонстрационные данные
 test/                 модельные, контроллерные и policy-тесты
@@ -290,4 +312,4 @@ config/locales/ru.yml русские подписи
 - [x] Итерация 5. REST API с JWT.
 - [x] Итерация 6. Интеграция с внешним API.
 - [x] Итерация 7. Уведомления и аудит в интерфейсе.
-- [ ] Итерация 8. CI, документация, деплой.
+- [x] Итерация 8. CI, документация, деплой.

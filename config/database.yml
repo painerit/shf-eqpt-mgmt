@@ -17,6 +17,6 @@ test:
 
 production:
   <<: *default
-  database: sw_verification_production
-  username: sw_verification
-  password: <%= ENV["SW_VERIFICATION_DATABASE_PASSWORD"] %>
+  database: <%= ENV.fetch("DATABASE_NAME", "sw_verification_production") %>
+  username: <%= ENV.fetch("DATABASE_USER", "postgres") %>
+  password: <%= ENV["DATABASE_PASSWORD"] %>
