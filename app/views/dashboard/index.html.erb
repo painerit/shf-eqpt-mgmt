@@ -200,7 +200,10 @@
   <section class="card">
     <header class="card__header">
       <h2>Уведомления</h2>
-      <span class="badge badge--warning"><%= @unread_notifications_count %></span>
+      <div class="card__header-actions">
+        <span class="badge badge--warning"><%= @unread_notifications_count %></span>
+        <%= link_to "Все уведомления", notifications_path, class: "btn btn--small" %>
+      </div>
     </header>
 
     <ul class="list">

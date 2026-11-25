@@ -32,6 +32,13 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :notifications, only: [:index, :update] do
+    collection do
+      patch :read_all
+      post :scan
+    end
+  end
+
   namespace :api do
     namespace :v1 do
       post "auth/login", to: "auth#create"
@@ -49,5 +56,6 @@ Rails.application.routes.draw do
 
   namespace :admin do
     resources :users, only: [:index, :new, :create, :edit, :update]
+    resources :audit_logs, only: [:index, :show]
   end
 end

@@ -1,0 +1,63 @@
+<% page_title "Уведомления" %>
+
+<div class="page-header">
+  <div>
+    <h1>Уведомления</h1>
+    <p>Сроки поверки и события по оборудованию</p>
+  </div>
+  <div class="page-header__actions">
+    <% if policy(Notification).scan? %>
+      <%= button_to "Проверить сроки", scan_notifications_path, method: :post, class: "btn" %>
+    <% end %>
+    <% if @unread_count.positive? %>
+      <%= button_to "Прочитать все", read_all_notifications_path, method: :patch, class: "btn btn--ghost" %>
+    <% end %>
+  </div>
+</div>
+
+<div class="tabs">
+  <%= link_to "Все", notifications_path, class: params[:filter] == "unread" ? "tab" : "tab tab--active" %>
+  <%= link_to "Непрочитанные (#{@unread_count})",
+              notifications_path(filter: "unread"),
+              class: params[:filter] == "unread" ? "tab tab--active" : "tab" %>
+</div>
+
+<section class="card">
+  <% if @notifications.any? %>
+    <ul class="notification-list">
+      <% @notifications.each do |notification| %>
+        <li class="notification-item <%= "notification-item--unread" unless notification.read? %>">
+          <div class="notification-item__body">
+            <div class="notification-item__header">
+              <span class="badge badge--neutral"><%= notification_kind_label(notification.kind) %></span>
+              <span class="muted"><%= human_datetime(notification.created_at) %></span>
+            </div>
+            <strong><%= notification.message %></strong>
+            <span class="muted">
+              Срок: <%= human_date(notification.due_on) %>
+              <% if notification.notifiable.is_a?(Equipment) %>
+                · <%= link_to notification.notifiable.inventory_number, equipment_path(notification.notifiable) %>
+              <% end %>
+            </span>
+          </div>
+          <div class="notification-item__actions">
+            <% unless notification.read? %>
+              <%= button_to "Прочитать", notification_path(notification), method: :patch, class: "btn btn--small" %>
+            <% else %>
+              <span class="badge badge--success">Прочитано</span>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+
+    <div class="pagination-wrap">
+      <%= paginate @notifications %>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <strong>Уведомлений нет</strong>
+      <span>После проверки сроков здесь появятся просроченные и ближайшие поверки.</span>
+    </div>
+  <% end %>
+</section>

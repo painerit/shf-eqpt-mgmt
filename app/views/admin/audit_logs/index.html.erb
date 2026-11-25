@@ -1,0 +1,101 @@
+<% page_title "Аудит" %>
+
+<div class="page-header">
+  <div>
+    <h1>Журнал аудита</h1>
+    <p>История действий пользователей и изменений в системе</p>
+  </div>
+</div>
+
+<section class="card">
+  <%= form_with url: admin_audit_logs_path, method: :get, local: true, class: "filters" do |form| %>
+    <div class="filters__grid">
+      <div class="field">
+        <%= form.label :user_id, "Пользователь" %>
+        <%= form.select :user_id,
+                        options_from_collection_for_select(@users, :id, :display_name, params[:user_id]),
+                        { include_blank: "Все пользователи" } %>
+      </div>
+
+      <div class="field">
+        <%= form.label :event, "Действие" %>
+        <%= form.select :event,
+                        options_for_select(@actions.map { |action| [audit_action_label(action), action] }, params[:event]),
+                        { include_blank: "Все действия" } %>
+      </div>
+
+      <div class="field">
+        <%= form.label :auditable_type, "Объект" %>
+        <%= form.select :auditable_type,
+                        options_for_select(@auditable_types.map { |type| [auditable_type_label(type), type] }, params[:auditable_type]),
+                        { include_blank: "Все объекты" } %>
+      </div>
+
+      <div class="field">
+        <%= form.label :date_from, "Дата с" %>
+        <%= form.date_field :date_from, value: params[:date_from] %>
+      </div>
+
+      <div class="field">
+        <%= form.label :date_to, "Дата по" %>
+        <%= form.date_field :date_to, value: params[:date_to] %>
+      </div>
+    </div>
+
+    <div class="filters__actions">
+      <%= form.submit "Применить", class: "btn btn--primary" %>
+      <%= link_to "Сбросить", admin_audit_logs_path, class: "btn btn--ghost" %>
+    </div>
+  <% end %>
+</section>
+
+<section class="card">
+  <header class="card__header">
+    <h2>Записей: <%= @audit_logs.total_count %></h2>
+  </header>
+
+  <% if @audit_logs.any? %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>Пользователь</th>
+            <th>Действие</th>
+            <th>Объект</th>
+            <th>Изменённые поля</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @audit_logs.each do |log| %>
+            <tr>
+              <td><%= human_datetime(log.created_at) %></td>
+              <td><%= log.user&.display_name || "Система" %></td>
+              <td><span class="badge badge--neutral"><%= audit_action_label(log.action) %></span></td>
+              <td>
+                <%= auditable_type_label(log.auditable_type) %>
+                <span class="muted">#<%= log.auditable_id %></span>
+              </td>
+              <td>
+                <%= log.changed_fields.map { |field| audit_field_label(log.auditable_type, field) }.join(", ") %>
+              </td>
+              <td class="table__actions">
+                <%= link_to "Открыть", admin_audit_log_path(log), class: "btn btn--small" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-wrap">
+      <%= paginate @audit_logs %>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <strong>Записей нет</strong>
+      <span>Измените фильтры или выполните действия в системе.</span>
+    </div>
+  <% end %>
+</section>

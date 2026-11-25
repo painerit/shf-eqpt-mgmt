@@ -36,16 +36,18 @@
                         verifications_path,
                         class: controller_name == "verifications" ? "nav-link nav-link--active" : "nav-link" %>
 
-            <span class="nav-link nav-link--disabled">
-              Уведомления
+            <%= link_to notifications_path,
+                        class: controller_name == "notifications" ? "nav-link nav-link--active" : "nav-link" do %>
+              <span>Уведомления</span>
               <% if unread_notifications_count.positive? %>
                 <span class="nav-badge nav-badge--accent"><%= unread_notifications_count %></span>
               <% end %>
-            </span>
+            <% end %>
 
             <% if current_user.admin? %>
               <div class="nav-section">Администрирование</div>
               <%= link_to "Пользователи", admin_users_path, class: nav_link_class(admin_users_path) %>
+              <%= link_to "Аудит", admin_audit_logs_path, class: controller_name == "audit_logs" ? "nav-link nav-link--active" : "nav-link" %>
             <% end %>
           </nav>
 

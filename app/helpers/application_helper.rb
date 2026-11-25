@@ -83,4 +83,16 @@ module ApplicationHelper
       "failed" => "Ошибка синхронизации"
     }.fetch(status.to_s, status.to_s.humanize)
   end
+
+  def auditable_type_label(type)
+    type.to_s.constantize.model_name.human
+  rescue NameError
+    type.to_s
+  end
+
+  def audit_field_label(type, field)
+    type.to_s.constantize.human_attribute_name(field, default: field)
+  rescue NameError
+    field.to_s.humanize
+  end
 end
