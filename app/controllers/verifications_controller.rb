@@ -52,12 +52,11 @@ class VerificationsController < ApplicationController
   def update
     authorize @verification
 
-    if @verification.update(verification_params)
-      record_audit(@verification, "update", @verification.saved_changes)
-      redirect_to edit_verification_path(@verification), notice: "Черновик поверки сохранён."
+    if params[:commit_action] == "complete"
+      authorize @verification, :complete?
+      complete_verification
     else
-      prepare_form
-      render :edit, status: :unprocessable_entity
+      save_draft
     end
   end
 
@@ -76,18 +75,7 @@ class VerificationsController < ApplicationController
 
   def complete
     authorize @verification, :complete?
-
-    Verifications::Complete.new(
-      verification: @verification,
-      user: current_user,
-      attributes: verification_params
-    ).call
-
-    redirect_to verification_path(@verification), notice: "Поверка завершена."
-  rescue ActiveRecord::RecordInvalid
-    prepare_form
-    flash.now[:alert] = @verification.errors.full_messages.to_sentence.presence || "Проверьте результаты поверки."
-    render :edit, status: :unprocessable_entity
+    complete_verification
   end
 
   def cancel
@@ -136,6 +124,30 @@ class VerificationsController < ApplicationController
     return if @verification.verification_results.any?
 
     3.times { @verification.verification_results.build }
+  end
+
+  def save_draft
+    if @verification.update(verification_params)
+      record_audit(@verification, "update", @verification.saved_changes)
+      redirect_to edit_verification_path(@verification), notice: "Черновик поверки сохранён."
+    else
+      prepare_form
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def complete_verification
+    Verifications::Complete.new(
+      verification: @verification,
+      user: current_user,
+      attributes: verification_params
+    ).call
+
+    redirect_to verification_path(@verification), notice: "Поверка завершена."
+  rescue ActiveRecord::RecordInvalid
+    prepare_form
+    flash.now[:alert] = @verification.errors.full_messages.to_sentence.presence || "Проверьте результаты поверки."
+    render :edit, status: :unprocessable_entity
   end
 
   def record_audit(verification, action, changes)

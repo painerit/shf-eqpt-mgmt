@@ -120,6 +120,33 @@ class VerificationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal Date.new(2027, 11, 20), equipment(:generator).reload.next_verification_on
   end
 
+  test "engineer completes verification through the edit form commit action" do
+    sign_in_as users(:engineer)
+    verification = verifications(:draft)
+
+    patch verification_path(verification), params: {
+      commit_action: "complete",
+      verification: {
+        performed_on: "2026-11-21",
+        conclusion: "Оборудование пригодно",
+        verification_results_attributes: {
+          "0" => {
+            parameter_name: "Выходная мощность",
+            unit: "Вт",
+            measured_value: "10.0",
+            reference_value: "10.0",
+            tolerance: "0.5",
+            passed: "true"
+          }
+        }
+      }
+    }
+
+    assert_redirected_to verification_path(verification)
+    assert_equal "passed", verification.reload.status
+    assert_equal "PR-2026-000001", verification.protocol_number
+  end
+
   test "failed result completes verification without certificate" do
     sign_in_as users(:engineer)
     verification = verifications(:draft)

@@ -117,7 +117,7 @@ docker compose exec web bin/rails zeitwerk:check
 - production Docker Compose с healthcheck и bootstrap-задачей;
 - документация по архитектуре, модели данных, тестированию и деплою;
 - health endpoint `/up`;
-- 198 тестов: модели, контроллеры, API, запросы, сервисы, задания, доступы, политики;
+- 199 тестов: модели, контроллеры, API, запросы, сервисы, задания, доступы, политики;
 - Docker Compose с healthcheck PostgreSQL и автоматическим `db:prepare`;
 - русская локаль и часовой пояс Москвы;
 - фиксация зависимостей `json ~> 2.6` и `minitest ~> 5.20` для совместимости с Rails 7.0.

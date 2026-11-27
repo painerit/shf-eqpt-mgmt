@@ -39,5 +39,5 @@ docker compose run --rm web bin/rails zeitwerk:check
 ## Текущий результат
 
 ```text
-198 runs, 637 assertions, 0 failures, 0 errors
+199 runs, 641 assertions, 0 failures, 0 errors
 ```

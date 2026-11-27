@@ -111,11 +111,14 @@
     </div>
 
     <div class="form-actions">
-      <%= form.submit "Сохранить черновик", class: "btn" %>
+      <%= form.submit "Сохранить черновик",
+                      name: "commit_action",
+                      value: "draft",
+                      class: "btn" %>
       <%= form.submit "Завершить поверку",
-                      class: "btn btn--primary",
-                      formaction: complete_verification_path(@verification),
-                      formmethod: :post %>
+                      name: "commit_action",
+                      value: "complete",
+                      class: "btn btn--primary" %>
       <%= link_to "Отмена", verification_path(@verification), class: "btn btn--ghost" %>
     </div>
   <% end %>
